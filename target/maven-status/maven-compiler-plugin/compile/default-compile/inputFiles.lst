@@ -1,0 +1,9 @@
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/config/BrokerServiceConfiguration.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/adapter/mqtt/MQTTServiceImpl.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/core/service/BrokerServiceImpl.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/core/service/BrokerService.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/core/model/BrokerInformation.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/adapter/mqtt/MQTTService.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/MQTTBrokerserviceApplication.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/adapter/http/MQTTBrokerApiController.java
+/Users/amandanorell/Downloads/kod/mqttbrokerservice/src/main/java/com/demo/mqttbrokerservice/adapter/http/dto/BrokerInformationDTO.java
