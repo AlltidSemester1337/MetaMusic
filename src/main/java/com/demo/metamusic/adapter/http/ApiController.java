@@ -1,10 +1,10 @@
 package com.demo.metamusic.adapter.http;
 
-import com.demo.metamusic.adapter.http.dto.MetaMusicTrackInformationDTO;
+import com.demo.metamusic.adapter.http.dto.TrackInformationHttpDTO;
 import com.demo.metamusic.adapter.http.dto.UpdatedTrackCatalogueLinkDTO;
-import com.demo.metamusic.adapter.persistence.MetaMusicRepository;
+import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.core.model.LinkUtils;
-import com.demo.metamusic.core.model.MetaMusicTrackInformation;
+import com.demo.metamusic.core.model.TrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,37 +19,37 @@ import java.time.format.DateTimeParseException;
         path = "/api/v1",
         produces = MediaType.APPLICATION_JSON_VALUE
 )
-public class MetaMusicApiController {
+public class ApiController {
 
     private final MetaMusicService metaMusicService;
     @Autowired
-    private final MetaMusicRepository metaMusicRepository;
+    private final ArtistInformationRepository artistInformationRepository;
 
 
-    public MetaMusicApiController(MetaMusicService metaMusicService, MetaMusicRepository metaMusicRepository) {
+    public ApiController(MetaMusicService metaMusicService, ArtistInformationRepository artistInformationRepository) {
         this.metaMusicService = metaMusicService;
-        this.metaMusicRepository = metaMusicRepository;
+        this.artistInformationRepository = artistInformationRepository;
     }
 
     @PutMapping(path = "/tracks/add", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedTrackCatalogueLinkDTO> addTrack(
-            @RequestBody final MetaMusicTrackInformationDTO metaMusicTrackInformationDTO) {
+            @RequestBody final TrackInformationHttpDTO trackInformationHttpDTO) {
 
-        MetaMusicTrackInformation trackInformation;
+        TrackInformation trackInformation;
         // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
         try {
-            trackInformation = MetaMusicTrackInformation.fromDTO(metaMusicTrackInformationDTO);
+            trackInformation = TrackInformation.fromHttpDTO(trackInformationHttpDTO);
         } catch (DateTimeParseException | IllegalArgumentException ignored) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         metaMusicService.addTrack(trackInformation);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new UpdatedTrackCatalogueLinkDTO(LinkUtils.getCatalogueLink(metaMusicTrackInformationDTO.artist())));
+                .body(new UpdatedTrackCatalogueLinkDTO(LinkUtils.getCatalogueLink(trackInformationHttpDTO.artist())));
     }
 
     @GetMapping(path = "/{brokerName}")
-    public ResponseEntity<MetaMusicTrackInformationDTO> getBrokerInformation(
+    public ResponseEntity<TrackInformationHttpDTO> getBrokerInformation(
             @PathVariable("brokerName") final String brokerName) {
         //com.demo.metamusicservice.adapter.http.dto.MetaMusicInformationDTO metamusicInformationDTO = metamusicInformation.toDto(metamusicService.getBrokerInformation(brokerName));
         return ResponseEntity.status(HttpStatus.OK).build();//.body(metamusicInformationDTO);

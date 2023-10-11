@@ -1,6 +1,6 @@
 package com.demo.metamusic.adapter.http;
 
-import com.demo.metamusic.adapter.persistence.MetaMusicRepository;
+import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,13 +19,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-class MetaMusicApiControllerIT {
+class ApiControllerIT {
 
 
     private MockMvc mockMvc;
 
     @MockBean
-    private MetaMusicRepository mockMetaMusicRepository;
+    private ArtistInformationRepository mockArtistInformationRepository;
 
     @BeforeEach
     void setUp(final WebApplicationContext webApplicationContext) {

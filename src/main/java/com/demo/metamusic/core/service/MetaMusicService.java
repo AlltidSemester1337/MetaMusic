@@ -1,9 +1,9 @@
 package com.demo.metamusic.core.service;
 
-import com.demo.metamusic.core.model.MetaMusicTrackInformation;
+import com.demo.metamusic.core.model.TrackInformation;
 
 public interface MetaMusicService {
 
 
-    void addTrack(MetaMusicTrackInformation trackInformation);
+    void addTrack(TrackInformation trackInformation);
 }

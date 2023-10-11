@@ -1,8 +1,8 @@
 package com.demo.metamusic.config;
 
 
-import com.demo.metamusic.adapter.persistence.MetaMusicRepository;
-import com.demo.metamusic.adapter.persistence.MetaMusicRepositoryImpl;
+import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
+import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import com.demo.metamusic.core.service.MetaMusicService;
 import com.demo.metamusic.core.service.MetaMusicServiceImpl;
 import org.springframework.context.annotation.Bean;
@@ -13,13 +13,8 @@ import org.springframework.context.annotation.Configuration;
 public class MetaMusicServiceConfiguration {
 
     @Bean
-    MetaMusicService metaMusicService() {
-        return new MetaMusicServiceImpl();
-    }
-
-    @Bean
-    MetaMusicRepository metaMusicRepository() {
-        return new MetaMusicRepositoryImpl();
+    MetaMusicService metaMusicService(TrackInformationRepository trackInformationRepository, ArtistInformationRepository artistInformationRepository) {
+        return new MetaMusicServiceImpl(trackInformationRepository, artistInformationRepository);
     }
 
 }
