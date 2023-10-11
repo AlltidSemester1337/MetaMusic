@@ -1,6 +1,10 @@
 package com.demo.metamusic.adapter.http;
 
+import com.demo.metamusic.adapter.http.dto.MetaMusicTrackInformationDTO;
+import com.demo.metamusic.adapter.http.dto.UpdatedTrackCatalogueLinkDTO;
 import com.demo.metamusic.adapter.persistence.MetaMusicRepository;
+import com.demo.metamusic.core.model.LinkUtils;
+import com.demo.metamusic.core.model.MetaMusicTrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,33 +12,44 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeParseException;
+
 @RestController
 @RequestMapping(
-        path = "/mqtt",
+        path = "/api/v1",
         produces = MediaType.APPLICATION_JSON_VALUE
 )
 public class MetaMusicApiController {
 
-    private final MetaMusicService metamusicService;
+    private final MetaMusicService metaMusicService;
     @Autowired
     private final MetaMusicRepository metaMusicRepository;
 
 
-    public MetaMusicApiController(MetaMusicService metamusicService, MetaMusicRepository metaMusicRepository) {
-        this.metamusicService = metamusicService;
+    public MetaMusicApiController(MetaMusicService metaMusicService, MetaMusicRepository metaMusicRepository) {
+        this.metaMusicService = metaMusicService;
         this.metaMusicRepository = metaMusicRepository;
     }
 
-    @PutMapping(path = "/{brokerName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> registerBroker(
-            @PathVariable("brokerName") final String brokerName,
-            @RequestBody final com.demo.metamusicservice.adapter.http.dto.MetaMusicInformationDTO metamusicInformationDTO) {
-        //metamusicService.registerBroker(brokerName, metamusicInformation.fromDto(metamusicInformationDTO));
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @PutMapping(path = "/tracks/add", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedTrackCatalogueLinkDTO> addTrack(
+            @RequestBody final MetaMusicTrackInformationDTO metaMusicTrackInformationDTO) {
+
+        MetaMusicTrackInformation trackInformation;
+        // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
+        try {
+            trackInformation = MetaMusicTrackInformation.fromDTO(metaMusicTrackInformationDTO);
+        } catch (DateTimeParseException | IllegalArgumentException ignored) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        metaMusicService.addTrack(trackInformation);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new UpdatedTrackCatalogueLinkDTO(LinkUtils.getCatalogueLink(metaMusicTrackInformationDTO.artist())));
     }
 
     @GetMapping(path = "/{brokerName}")
-    public ResponseEntity<com.demo.metamusicservice.adapter.http.dto.MetaMusicInformationDTO> getBrokerInformation(
+    public ResponseEntity<MetaMusicTrackInformationDTO> getBrokerInformation(
             @PathVariable("brokerName") final String brokerName) {
         //com.demo.metamusicservice.adapter.http.dto.MetaMusicInformationDTO metamusicInformationDTO = metamusicInformation.toDto(metamusicService.getBrokerInformation(brokerName));
         return ResponseEntity.status(HttpStatus.OK).build();//.body(metamusicInformationDTO);
@@ -64,8 +79,8 @@ public class MetaMusicApiController {
         //metamusicInformation metamusicInformation = metamusicService.getBrokerInformation(brokerName);
 
         //try {
-            //String message = metaMusicRepository.awaitNextMessage(metamusicInformation, topicName);
-            return ResponseEntity.status(HttpStatus.OK).build();//.body(message);
+        //String message = metaMusicRepository.awaitNextMessage(metamusicInformation, topicName);
+        return ResponseEntity.status(HttpStatus.OK).build();//.body(message);
         //} catch (InterruptedException e) {
         //    return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).build();
         //}

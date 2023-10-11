@@ -2,12 +2,20 @@ package com.demo.metamusic.adapter.http;
 
 import com.demo.metamusic.adapter.persistence.MetaMusicRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import static com.demo.metamusic.TestConstants.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -25,25 +33,42 @@ class MetaMusicApiControllerIT {
                 .build();
     }
 
-    /*@Test
-    void whenRegister_withValidData_shouldRespondWithCreated() throws Exception {
-        ResultActions registerResult = registerBroker();
-        registerResult.andExpect(status().isCreated());
+    @Test
+    void whenAddTrack_withValidData_shouldRespondWithCreatedAndLinkToArtistTracks() throws Exception {
+        ResultActions registerResult = addTrack(EXAMPLE_TRACK_PAYLOAD);
+
+        registerResult.andExpect(status().isCreated())
+                .andExpect(content().json("""
+                                {
+                          "updatedCatalogueLink": "/api/v1/artists/tracks?artistName=Fleetwood+Mac"
+                        }"""));
     }
 
-    private ResultActions registerBroker() throws Exception {
-        final String requestBody = String.format("""
-                {
-                  "hostName": "%s",
-                  "port": %d
-                }
-                """, TestConstants.BROKER_INFORMATION.hostName(), TestConstants.BROKER_INFORMATION.port());
-
-        return mockMvc.perform(put("/mqtt/" + TestConstants.BROKER_NAME)
+    private ResultActions addTrack(String requestBody) throws Exception {
+        return mockMvc.perform(put("/api/v1/tracks/add")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(requestBody));
     }
+
+    @Test
+    void whenAddTrack_withInvalidData_shouldRespondWithBadRequest() throws Exception {
+        ResultActions anotherAddTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_TITLE);
+
+        anotherAddTrackResult.andExpect(status().isBadRequest());
+
+        ResultActions addTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_DURATION);
+
+        addTrackResult.andExpect(status().isBadRequest());
+
+        ResultActions thirdAddTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_RELEASE_DATE);
+
+        thirdAddTrackResult.andExpect(status().isBadRequest());
+    }
+
+    // TODO: 10/11/23 Scoped out / left other types of error handling due to time constraints (For example we may want to treat DB connectivity issues and present a user friendly message etc)
+
+    /*
 
     @Test
     void whenGet_withValidData_shouldRespondWithExpectedOkResponse() throws Exception {
