@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockSettings;
 import org.mockito.MockitoAnnotations;
 
 import java.sql.Date;
@@ -45,17 +46,18 @@ class MetaMusicServiceImplTest {
     }
 
     @Test
-    void givenValidTrackInformation_makesCallToPersistData() {
+    void givenValidTrackInformation_makesNecessaryCallsToPersistArtistData() {
         long artistId = 1L;
-        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
+        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS));
         when(mockedArtistDto.getId()).thenReturn(artistId);
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
 
-        metaMusicService.addTrack(new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
-                TestConstants.EXAMPLE_GENRE, Duration.ofSeconds(3), LocalDate.EPOCH));
+        TrackInformation newTrack = new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                TestConstants.EXAMPLE_GENRE, Duration.ofSeconds(3), LocalDate.EPOCH);
+        metaMusicService.addTrack(newTrack);
 
-        verify(trackInformationRepository).save(eq(new TrackInformationEntity(artistId, TestConstants.EXAMPLE_TRACK_TITLE,
-                TestConstants.EXAMPLE_GENRE, "0:3", Date.valueOf(LocalDate.EPOCH))));
+        verify(mockedArtistDto.getTracks()).add(eq(TrackInformation.toEntity(newTrack)));
+        verify(artistInformationRepository).save(eq(mockedArtistDto));
     }
 
     // TODO: 10/12/23 With the current requirements this makes sense (One track can only have one artist),

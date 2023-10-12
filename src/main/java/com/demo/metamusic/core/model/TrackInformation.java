@@ -16,7 +16,7 @@ public record TrackInformation(String title, String artist, String genre, Durati
         Validate.notBlank(genre);
     }
 
-    public static TrackInformation fromHttpDTO(TrackInformationDTO trackInformationDTO) {
+    public static TrackInformation fromDTO(TrackInformationDTO trackInformationDTO) {
         Duration duration = parseDuration(trackInformationDTO.duration());
         LocalDate releaseDate = parseReleaseDate(trackInformationDTO.releaseDate());
 
@@ -24,11 +24,11 @@ public record TrackInformation(String title, String artist, String genre, Durati
                 trackInformationDTO.genre(), duration, releaseDate);
     }
 
-    public static TrackInformationEntity toDTO(TrackInformation trackInformation, Long artistId) {
+    public static TrackInformationEntity toEntity(TrackInformation trackInformation) {
         String duration = toString(trackInformation.duration());
         Date releaseDate = Date.valueOf(trackInformation.releaseDate());
 
-        return new TrackInformationEntity(artistId, trackInformation.title(),
+        return new TrackInformationEntity(trackInformation.title(),
                 trackInformation.genre(), duration, releaseDate);
     }
 

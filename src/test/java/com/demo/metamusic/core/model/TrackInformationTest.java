@@ -22,7 +22,7 @@ class TrackInformationTest {
                 TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
                 TestConstants.EXAMPLE_TRACK_RELEASE_DATE);
 
-        assertEquals(expected, TrackInformation.fromHttpDTO(trackInformationDTO));
+        assertEquals(expected, TrackInformation.fromDTO(trackInformationDTO));
     }
 
     @Test
@@ -32,7 +32,7 @@ class TrackInformationTest {
                 new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
                         TestConstants.EXAMPLE_GENRE, "4:66", TestConstants.EXAMPLE_RELEASE_DATE_TEXT);
 
-        assertThrows(IllegalArgumentException.class, () -> TrackInformation.fromHttpDTO(trackInformationDTO));
+        assertThrows(IllegalArgumentException.class, () -> TrackInformation.fromDTO(trackInformationDTO));
     }
 
     @Test
@@ -46,21 +46,19 @@ class TrackInformationTest {
                 new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, "1997/04/66");
 
-        assertThrows(DateTimeParseException.class, () -> TrackInformation.fromHttpDTO(trackInformationDTOInvalidDateFormat));
-        assertThrows(DateTimeParseException.class, () -> TrackInformation.fromHttpDTO(trackInformationDTOInvalidDate));
+        assertThrows(DateTimeParseException.class, () -> TrackInformation.fromDTO(trackInformationDTOInvalidDateFormat));
+        assertThrows(DateTimeParseException.class, () -> TrackInformation.fromDTO(trackInformationDTOInvalidDate));
     }
 
     @Test
     void givenValidTrackInformation_convertsToExpectedDTO() {
-        Long artistId = 1L;
-
         TrackInformation trackInformation =
                 new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
                         TestConstants.EXAMPLE_TRACK_RELEASE_DATE);
-        TrackInformationEntity expected = new TrackInformationEntity(artistId, TestConstants.EXAMPLE_TRACK_TITLE,
+        TrackInformationEntity expected = new TrackInformationEntity(TestConstants.EXAMPLE_TRACK_TITLE,
                 TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, Date.valueOf("1977-02-04"));
 
-        assertEquals(expected, TrackInformation.toDTO(trackInformation, artistId));
+        assertEquals(expected, TrackInformation.toEntity(trackInformation));
     }
 }

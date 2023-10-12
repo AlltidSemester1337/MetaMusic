@@ -8,16 +8,13 @@ import java.util.Objects;
 @Entity(name = "tracks")
 public class TrackInformationEntity {
 
-    @SequenceGenerator(name = "tracks_id_seq",
-            sequenceName = "tracks_id_seq",
-            allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "tracks_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
-    @Column(name="artist_id")
-    private Long artistId;
+    @ManyToOne
+    @JoinColumn(name = "artist_id")
+    private ArtistInformationEntity artist;
 
     private String title;
     private String genre;
@@ -28,8 +25,7 @@ public class TrackInformationEntity {
     public TrackInformationEntity() {
     }
 
-    public TrackInformationEntity(Long artistId, String title, String genre, String duration, Date releaseDate) {
-        this.artistId = artistId;
+    public TrackInformationEntity(String title, String genre, String duration, Date releaseDate) {
         this.title = title;
         this.genre = genre;
         this.duration = duration;
@@ -40,8 +36,8 @@ public class TrackInformationEntity {
         return id;
     }
 
-    public Long getArtistId() {
-        return artistId;
+    public ArtistInformationEntity getArtist() {
+        return artist;
     }
 
     public String getTitle() {
@@ -60,16 +56,20 @@ public class TrackInformationEntity {
         return releaseDate;
     }
 
+    public void setArtist(ArtistInformationEntity artist) {
+        this.artist = artist;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TrackInformationEntity that = (TrackInformationEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(artistId, that.artistId) && Objects.equals(title, that.title) && Objects.equals(genre, that.genre) && Objects.equals(duration, that.duration) && Objects.equals(releaseDate, that.releaseDate);
+        return Objects.equals(id, that.id) && Objects.equals(artist, that.artist) && Objects.equals(title, that.title) && Objects.equals(genre, that.genre) && Objects.equals(duration, that.duration) && Objects.equals(releaseDate, that.releaseDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, artistId, title, genre, duration, releaseDate);
+        return Objects.hash(id, artist, title, genre, duration, releaseDate);
     }
 }

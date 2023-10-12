@@ -38,7 +38,7 @@ public class ApiController {
         TrackInformation trackInformation;
         // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
         try {
-            trackInformation = TrackInformation.fromHttpDTO(trackInformationDTO);
+            trackInformation = TrackInformation.fromDTO(trackInformationDTO);
         } catch (DateTimeParseException | IllegalArgumentException ignored) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

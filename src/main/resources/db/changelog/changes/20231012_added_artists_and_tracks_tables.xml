@@ -19,9 +19,8 @@
             <column name="id" type="bigserial" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <!-- TODO: FK -->
             <column name="artist_id" type="bigint">
-                <constraints nullable="false"/>
+                <constraints foreignKeyName="fk_albums_artists" referencedTableName="artists" referencedColumnNames="id" nullable="false"/>
             </column>
             <column name="title" type="varchar(70)">
                 <constraints nullable="false"/>

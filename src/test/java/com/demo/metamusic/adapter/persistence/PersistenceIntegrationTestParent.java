@@ -1,5 +1,6 @@
 package com.demo.metamusic.adapter.persistence;
 
+import jakarta.transaction.Transactional;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -9,6 +10,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 public class PersistenceIntegrationTestParent {
 
     @Container

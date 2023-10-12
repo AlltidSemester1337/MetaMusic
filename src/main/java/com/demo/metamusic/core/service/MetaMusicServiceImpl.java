@@ -4,6 +4,7 @@ package com.demo.metamusic.core.service;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
+import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
 import com.demo.metamusic.core.model.TrackInformation;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,10 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
         Validate.isTrue(matchingArtists.size() == 1, "Found multiple matching artists with name: " + trackInformation.artist());
 
-        Long artistId = matchingArtists.get(0).getId();
-        trackInformationRepository.save(TrackInformation.toDTO(trackInformation, artistId));
+        ArtistInformationEntity artistToUpdate = matchingArtists.get(0);
+        TrackInformationEntity newTrack = TrackInformation.toEntity(trackInformation);
+        newTrack.setArtist(artistToUpdate);
+        artistToUpdate.getTracks().add(newTrack);
+        artistInformationRepository.save(artistToUpdate);
     }
 }
