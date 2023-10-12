@@ -1,9 +1,8 @@
 package com.demo.metamusic.core.model;
 
-import com.demo.metamusic.adapter.http.dto.TrackInformationHttpDTO;
-import com.demo.metamusic.adapter.persistence.dto.TrackInformationDTO;
+import com.demo.metamusic.adapter.http.dto.TrackInformationDTO;
+import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.query.sqm.TemporalUnit;
 
 import java.sql.Date;
 import java.time.Duration;
@@ -17,19 +16,19 @@ public record TrackInformation(String title, String artist, String genre, Durati
         Validate.notBlank(genre);
     }
 
-    public static TrackInformation fromHttpDTO(TrackInformationHttpDTO trackInformationHttpDTO) {
-        Duration duration = parseDuration(trackInformationHttpDTO.duration());
-        LocalDate releaseDate = parseReleaseDate(trackInformationHttpDTO.releaseDate());
+    public static TrackInformation fromHttpDTO(TrackInformationDTO trackInformationDTO) {
+        Duration duration = parseDuration(trackInformationDTO.duration());
+        LocalDate releaseDate = parseReleaseDate(trackInformationDTO.releaseDate());
 
-        return new TrackInformation(trackInformationHttpDTO.title(), trackInformationHttpDTO.artist(),
-                trackInformationHttpDTO.genre(), duration, releaseDate);
+        return new TrackInformation(trackInformationDTO.title(), trackInformationDTO.artist(),
+                trackInformationDTO.genre(), duration, releaseDate);
     }
 
-    public static TrackInformationDTO toDTO(TrackInformation trackInformation, Long artistId) {
+    public static TrackInformationEntity toDTO(TrackInformation trackInformation, Long artistId) {
         String duration = toString(trackInformation.duration());
         Date releaseDate = Date.valueOf(trackInformation.releaseDate());
 
-        return new TrackInformationDTO(artistId, trackInformation.title(),
+        return new TrackInformationEntity(artistId, trackInformation.title(),
                 trackInformation.genre(), duration, releaseDate);
     }
 

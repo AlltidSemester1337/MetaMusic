@@ -1,6 +1,6 @@
 package com.demo.metamusic.adapter.http;
 
-import com.demo.metamusic.adapter.http.dto.TrackInformationHttpDTO;
+import com.demo.metamusic.adapter.http.dto.TrackInformationDTO;
 import com.demo.metamusic.adapter.http.dto.UpdatedTrackCatalogueLinkDTO;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.core.model.LinkUtils;
@@ -33,23 +33,23 @@ public class ApiController {
 
     @PutMapping(path = "/tracks/add", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedTrackCatalogueLinkDTO> addTrack(
-            @RequestBody final TrackInformationHttpDTO trackInformationHttpDTO) {
+            @RequestBody final TrackInformationDTO trackInformationDTO) {
 
         TrackInformation trackInformation;
         // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
         try {
-            trackInformation = TrackInformation.fromHttpDTO(trackInformationHttpDTO);
+            trackInformation = TrackInformation.fromHttpDTO(trackInformationDTO);
         } catch (DateTimeParseException | IllegalArgumentException ignored) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         metaMusicService.addTrack(trackInformation);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new UpdatedTrackCatalogueLinkDTO(LinkUtils.getCatalogueLink(trackInformationHttpDTO.artist())));
+                .body(new UpdatedTrackCatalogueLinkDTO(LinkUtils.getCatalogueLink(trackInformationDTO.artist())));
     }
 
     @GetMapping(path = "/{brokerName}")
-    public ResponseEntity<TrackInformationHttpDTO> getBrokerInformation(
+    public ResponseEntity<TrackInformationDTO> getBrokerInformation(
             @PathVariable("brokerName") final String brokerName) {
         //com.demo.metamusicservice.adapter.http.dto.MetaMusicInformationDTO metamusicInformationDTO = metamusicInformation.toDto(metamusicService.getBrokerInformation(brokerName));
         return ResponseEntity.status(HttpStatus.OK).build();//.body(metamusicInformationDTO);

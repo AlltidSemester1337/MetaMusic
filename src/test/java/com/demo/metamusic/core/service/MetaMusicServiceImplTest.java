@@ -3,9 +3,10 @@ package com.demo.metamusic.core.service;
 import com.demo.metamusic.TestConstants;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
-import com.demo.metamusic.adapter.persistence.dto.ArtistInformationDTO;
-import com.demo.metamusic.adapter.persistence.dto.TrackInformationDTO;
+import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
+import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
 import com.demo.metamusic.core.model.TrackInformation;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -30,23 +32,54 @@ class MetaMusicServiceImplTest {
     private ArtistInformationRepository artistInformationRepository;
     @InjectMocks
     private MetaMusicServiceImpl metaMusicService;
+    private AutoCloseable autoCloseable;
 
     @BeforeEach
     void setUp() {
-        // TODO: 10/11/23 Do we need to treat the returned autoclosable?
-        MockitoAnnotations.openMocks(this);
+        autoCloseable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        autoCloseable.close();
     }
 
     @Test
     void givenValidTrackInformation_makesCallToPersistData() {
         long artistId = 1L;
-        ArtistInformationDTO mockedArtistDto = mock(ArtistInformationDTO.class);
+        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
         when(mockedArtistDto.getId()).thenReturn(artistId);
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
 
-        metaMusicService.addTrack(new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE, Duration.ofSeconds(3), LocalDate.EPOCH));
-        
-        verify(trackInformationRepository).save(eq(new TrackInformationDTO(artistId, TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_GENRE, "0:3", Date.valueOf(LocalDate.EPOCH))));
+        metaMusicService.addTrack(new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                TestConstants.EXAMPLE_GENRE, Duration.ofSeconds(3), LocalDate.EPOCH));
+
+        verify(trackInformationRepository).save(eq(new TrackInformationEntity(artistId, TestConstants.EXAMPLE_TRACK_TITLE,
+                TestConstants.EXAMPLE_GENRE, "0:3", Date.valueOf(LocalDate.EPOCH))));
+    }
+
+    // TODO: 10/12/23 With the current requirements this makes sense (One track can only have one artist),
+    //  but as a more realistic model or improvement we should most likely consider multiple artists being credited for one song
+    // TODO: 10/12/23 It's not clear however if there is one artist "owning" the song and other artists only collaborators
+    //  or if it should be considered shared ownership but regardless it may be good to have the track show up as result for all contributing artists.
+    @Test
+    void givenMultipleMatchingArtistsForTrack_throwsException() {
+        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
+        when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+                .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
+
+        assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(new TrackInformation(
+                TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
+                Duration.ofSeconds(3), LocalDate.EPOCH)));
+    }
+
+    @Test
+    void givenNoMatchingArtistsForTrack_throwsException() {
+        when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
+
+        assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(new TrackInformation(
+                TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
+                Duration.ofSeconds(3), LocalDate.EPOCH)));
     }
     /*
 

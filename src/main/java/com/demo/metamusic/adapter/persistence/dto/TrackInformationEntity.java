@@ -1,30 +1,34 @@
 package com.demo.metamusic.adapter.persistence.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.sql.Date;
 import java.util.Objects;
 
-@Entity
-public class TrackInformationDTO {
+@Entity(name = "tracks")
+public class TrackInformationEntity {
 
-        @GeneratedValue
-        @Id
-        private Long id;
+    @SequenceGenerator(name = "tracks_id_seq",
+            sequenceName = "tracks_id_seq",
+            allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+            generator = "tracks_id_seq")
+    @Id
+    private Long id;
 
-        private Long artistId;
+    @Column(name="artist_id")
+    private Long artistId;
 
-        private String title;
-        private String genre;
-        private String duration;
-        private Date releaseDate;
+    private String title;
+    private String genre;
+    private String duration;
+    @Column(name="release_date")
+    private Date releaseDate;
 
-        public TrackInformationDTO() {
-        }
+    public TrackInformationEntity() {
+    }
 
-    public TrackInformationDTO(Long artistId, String title, String genre, String duration, Date releaseDate) {
+    public TrackInformationEntity(Long artistId, String title, String genre, String duration, Date releaseDate) {
         this.artistId = artistId;
         this.title = title;
         this.genre = genre;
@@ -60,7 +64,7 @@ public class TrackInformationDTO {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TrackInformationDTO that = (TrackInformationDTO) o;
+        TrackInformationEntity that = (TrackInformationEntity) o;
         return Objects.equals(id, that.id) && Objects.equals(artistId, that.artistId) && Objects.equals(title, that.title) && Objects.equals(genre, that.genre) && Objects.equals(duration, that.duration) && Objects.equals(releaseDate, that.releaseDate);
     }
 
