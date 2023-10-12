@@ -56,7 +56,9 @@ class MetaMusicServiceImplTest {
                 TestConstants.EXAMPLE_GENRE, Duration.ofSeconds(3), LocalDate.EPOCH);
         metaMusicService.addTrack(newTrack);
 
-        verify(mockedArtistDto.getTracks()).add(eq(TrackInformation.toEntity(newTrack)));
+        TrackInformationEntity expected = TrackInformation.toEntity(newTrack);
+        expected.setArtist(mockedArtistDto);
+        verify(mockedArtistDto.getTracks()).add(eq(expected));
         verify(artistInformationRepository).save(eq(mockedArtistDto));
     }
 

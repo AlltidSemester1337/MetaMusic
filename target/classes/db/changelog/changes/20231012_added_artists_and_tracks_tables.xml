@@ -35,12 +35,5 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <!-- TODO remove if above column constraint works
-        <addForeignKeyConstraint
-                baseTableName="tracks"
-                baseColumnNames="artist_id"
-                referencedTableName="artists"
-                referencedColumnNames="id"
-                constraintName="fk_albums_artists" /> -->
     </changeSet>
 </databaseChangeLog>
