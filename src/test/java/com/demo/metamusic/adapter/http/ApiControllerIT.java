@@ -1,11 +1,21 @@
 package com.demo.metamusic.adapter.http;
 
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
+import com.demo.metamusic.core.service.MetaMusicService;
+import liquibase.integration.spring.SpringLiquibase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -13,22 +23,30 @@ import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static com.demo.metamusic.TestConstants.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureRestDocs(outputDir = "target/docs")
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
+// TODO: 10/12/23 Scoped out documenting request/response field description etc due to time constraints but to be prod ready we should have proper documentation in place
+//  This is a fair start at least (prod 1.0?)
+@ExtendWith({RestDocumentationExtension.class})
 class ApiControllerIT {
 
 
     private MockMvc mockMvc;
 
     @MockBean
-    private ArtistInformationRepository mockArtistInformationRepository;
+    private MetaMusicService metaMusicService;
 
     @BeforeEach
-    void setUp(final WebApplicationContext webApplicationContext) {
+    void setUp(final WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(documentationConfiguration(restDocumentation))
                 .build();
     }
 
@@ -40,7 +58,8 @@ class ApiControllerIT {
                 .andExpect(content().json("""
                                 {
                           "updatedCatalogueLink": "/api/v1/artists/tracks?artistName=Fleetwood+Mac"
-                        }"""));
+                        }"""))
+                .andDo(document("addTrack"));
     }
 
     private ResultActions addTrack(String requestBody) throws Exception {

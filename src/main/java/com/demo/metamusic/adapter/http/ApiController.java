@@ -22,13 +22,10 @@ import java.time.format.DateTimeParseException;
 public class ApiController {
 
     private final MetaMusicService metaMusicService;
-    @Autowired
-    private final ArtistInformationRepository artistInformationRepository;
 
 
-    public ApiController(MetaMusicService metaMusicService, ArtistInformationRepository artistInformationRepository) {
+    public ApiController(MetaMusicService metaMusicService) {
         this.metaMusicService = metaMusicService;
-        this.artistInformationRepository = artistInformationRepository;
     }
 
     @PutMapping(path = "/tracks/add", consumes = MediaType.APPLICATION_JSON_VALUE)

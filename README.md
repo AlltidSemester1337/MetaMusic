@@ -4,40 +4,25 @@ API for inserting and retrieving information about artists and their tracks.
 
 # API features / Usage
 
-##   * Add track to artist catalogue
+##    * Add track to artist catalogue
 
 **PUT /api/v1/tracks/add**
 
-Example request payload:
+Example request, response and curl can be found in
 
-      {
-        "title": "Gold Dust Woman",
-        "artist": "Fleetwood Mac",
-        "genre": "Rock",
-        "duration": "4:55",
-        "releaseDate": "1977-02-04"
-      }
+    /target/generated-snippets/addTrack
 
-Example success response:
-
-      {
-      "updatedCatalogueLink": "/api/v1/artists/tracks?artistName=Fleetwood+Mac"
-      }
-
-Example curl:
-
-      curl -X PUT -H "Content-Type: application/json" -d '{
-      "title": "Gold Dust Woman",
-      "artist": "Fleetwood Mac",
-      "genre": "Rock",
-      "duration": "4:55",
-      "releaseDate": "1977-02-04"
-      }
-      ' "http://localhost:8080/api/v1/tracks/add"
+Upon building project and executing integration tests
 
 # Local run prerequisites
 
-TODO
+Set up and have postgresql server running, define proper values for the following env variables:
+
+SPRING_DATASOURCE_URL
+
+SPRING_DATASOURCE_USERNAME
+
+SPRING_DATASOURCE_PASSWORD
 
 # Run from commandline
 

@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 public interface TestConstants {
-    ;
 
     String EXAMPLE_TRACK_TITLE = "Gold Dust Woman";
     String EXAMPLE_ARTIST_NAME = "Fleetwood Mac";
