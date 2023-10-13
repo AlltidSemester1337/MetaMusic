@@ -5,12 +5,16 @@ import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
+import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.model.TrackInformation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Autowired
@@ -25,8 +29,8 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Override
     public void addTrack(TrackInformation trackInformation) {
-        // TODO: 10/13/23 Log JPA interactions in a sensible way, take a look on internet for good practices
         List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(trackInformation.artist());
+        log.debug("Found matching artists: {}", matchingArtists);
 
         if (matchingArtists.isEmpty()) {
             throw new IllegalArgumentException("Could not find any artist with provided name: " + trackInformation.artist());
@@ -38,6 +42,12 @@ public class MetaMusicServiceImpl implements MetaMusicService {
         TrackInformationEntity newTrack = TrackInformation.toEntity(trackInformation);
         newTrack.setArtist(artistToUpdate);
         artistToUpdate.getTracks().add(newTrack);
-        artistInformationRepository.save(artistToUpdate);
+        ArtistInformationEntity updatedArtist = artistInformationRepository.save(artistToUpdate);
+        log.debug("Updated artist information: {}", updatedArtist);
+    }
+
+    @Override
+    public Optional<ArtistInformation> updateArtistInformation(String artistName, ArtistInformation newArtistInformation) {
+        return Optional.empty();
     }
 }

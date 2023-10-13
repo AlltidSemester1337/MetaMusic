@@ -1,8 +1,11 @@
 package com.demo.metamusic.adapter.http;
 
-import com.demo.metamusic.adapter.http.dto.TrackInformationDTO;
-import com.demo.metamusic.adapter.http.dto.UpdatedTrackCatalogueLinkDTO;
-import com.demo.metamusic.core.util.LinkUtils;
+import com.demo.metamusic.adapter.http.dto.request.ArtistUpdateDTO;
+import com.demo.metamusic.adapter.http.dto.request.TrackInformationDTO;
+import com.demo.metamusic.adapter.http.dto.response.UpdatedArtistDTO;
+import com.demo.metamusic.adapter.http.dto.response.UpdatedTrackCatalogueLinkDTO;
+import com.demo.metamusic.core.model.ArtistInformation;
+import com.demo.metamusic.core.util.UrlEncodingUtils;
 import com.demo.metamusic.core.model.TrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(
@@ -43,17 +47,31 @@ public class ApiController {
 
         metaMusicService.addTrack(trackInformation);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new UpdatedTrackCatalogueLinkDTO(LinkUtils.getCatalogueLink(trackInformationDTO.artist())));
+                .body(new UpdatedTrackCatalogueLinkDTO(UrlEncodingUtils.getCatalogueLink(trackInformationDTO.artist())));
     }
 
-    @GetMapping(path = "/{brokerName}")
-    public ResponseEntity<TrackInformationDTO> getBrokerInformation(
-            @PathVariable("brokerName") final String brokerName) {
-        //com.demo.metamusicservice.adapter.http.dto.MetaMusicInformationDTO metamusicInformationDTO = metamusicInformation.toDto(metamusicService.getBrokerInformation(brokerName));
-        return ResponseEntity.status(HttpStatus.OK).build();//.body(metamusicInformationDTO);
+    @PutMapping(path = "/artists/{name}/edit", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UpdatedArtistDTO> editArtist(
+            @PathVariable("name") final String artistName,
+            @RequestBody final ArtistUpdateDTO artistUpdateDTO) {
+        ArtistInformation newArtistInformation;
+        try {
+            newArtistInformation = ArtistInformation.fromDTO(artistUpdateDTO);
+        } catch (IllegalArgumentException e) {
+            log.info("Caught exception on parsing ArtistUpdateDTO", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        Optional<ArtistInformation> updatedArtistInformation = metaMusicService.updateArtistInformation(
+                UrlEncodingUtils.decodeArtistName(artistName), newArtistInformation);
+
+        return updatedArtistInformation.map(artistInformation -> ResponseEntity.status(HttpStatus.OK)
+                        .body(ArtistInformation.toDTO(artistInformation)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .build());
     }
 
-    @DeleteMapping(path = "/{brokerName}")
+    /*@DeleteMapping(path = "/{brokerName}")
     public ResponseEntity<Void> deleteBrokerInformation(
             @PathVariable("brokerName") final String brokerName) {
         //metamusicService.deleteBrokerInformation(brokerName);
@@ -69,18 +87,5 @@ public class ApiController {
         //metaMusicRepository.broadCastMessage(metamusicInformation, topicName, message);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
-
-    @GetMapping(path = "/{brokerName}/receive/{topicName}")
-    public ResponseEntity<String> getNextMessage(
-            @PathVariable("brokerName") final String brokerName,
-            @PathVariable("topicName") final String topicName) {
-        //metamusicInformation metamusicInformation = metamusicService.getBrokerInformation(brokerName);
-
-        //try {
-        //String message = metaMusicRepository.awaitNextMessage(metamusicInformation, topicName);
-        return ResponseEntity.status(HttpStatus.OK).build();//.body(message);
-        //} catch (InterruptedException e) {
-        //    return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).build();
-        //}
-    }
+*/
 }

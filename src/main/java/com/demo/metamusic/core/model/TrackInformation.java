@@ -1,6 +1,6 @@
 package com.demo.metamusic.core.model;
 
-import com.demo.metamusic.adapter.http.dto.TrackInformationDTO;
+import com.demo.metamusic.adapter.http.dto.request.TrackInformationDTO;
 import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
 import org.apache.commons.lang3.Validate;
 

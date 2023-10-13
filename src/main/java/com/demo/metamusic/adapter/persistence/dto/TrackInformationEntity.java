@@ -33,4 +33,16 @@ public class TrackInformationEntity {
         this.duration = duration;
         this.releaseDate = releaseDate;
     }
+
+    @Override
+    public String toString() {
+        return "TrackInformationEntity{" +
+                "id=" + id +
+                ", artist=" + artist.getName() +
+                ", title='" + title + '\'' +
+                ", genre='" + genre + '\'' +
+                ", duration='" + duration + '\'' +
+                ", releaseDate=" + releaseDate +
+                '}';
+    }
 }

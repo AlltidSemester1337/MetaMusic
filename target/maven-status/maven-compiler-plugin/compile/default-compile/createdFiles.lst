@@ -1,0 +1,16 @@
+com/demo/metamusic/adapter/persistence/dto/ArtistInformationEntity.class
+com/demo/metamusic/core/model/ArtistInformation.class
+com/demo/metamusic/adapter/http/dto/request/ArtistUpdateDTO.class
+com/demo/metamusic/core/util/UrlEncodingUtils.class
+com/demo/metamusic/adapter/persistence/dto/TrackInformationEntity.class
+com/demo/metamusic/adapter/persistence/TrackInformationRepository.class
+com/demo/metamusic/adapter/http/ApiController.class
+com/demo/metamusic/adapter/persistence/ArtistInformationRepository.class
+com/demo/metamusic/core/service/MetaMusicService.class
+com/demo/metamusic/core/model/TrackInformation.class
+com/demo/metamusic/core/service/MetaMusicServiceImpl.class
+com/demo/metamusic/adapter/http/dto/response/UpdatedArtistDTO.class
+com/demo/metamusic/adapter/http/dto/request/TrackInformationDTO.class
+com/demo/metamusic/config/MetaMusicServiceConfiguration.class
+com/demo/metamusic/MetaMusicServiceApplication.class
+com/demo/metamusic/adapter/http/dto/response/UpdatedTrackCatalogueLinkDTO.class

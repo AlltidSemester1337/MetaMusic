@@ -6,6 +6,12 @@
         </encoder>
     </appender>
 
+    <logger name="com.demo.metamusic" level="DEBUG" />
+
+    <!-- TODO: Should be removed or explicitly disabled in prod as the application scales but may be convinient in early release -->
+    <logger name="org.hibernate.SQL" level="DEBUG" />
+    <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
+
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
     </root>

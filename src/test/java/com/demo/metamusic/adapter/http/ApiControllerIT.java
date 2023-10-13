@@ -1,6 +1,8 @@
 package com.demo.metamusic.adapter.http;
 
+import com.demo.metamusic.TestConstants;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
+import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import liquibase.integration.spring.SpringLiquibase;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +24,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
+import java.util.Optional;
+
 import static com.demo.metamusic.TestConstants.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -60,6 +68,7 @@ class ApiControllerIT {
                           "updatedCatalogueLink": "/api/v1/artists/tracks?artistName=Fleetwood+Mac"
                         }"""))
                 .andDo(document("addTrack"));
+        verify(metaMusicService).addTrack(any());
     }
 
     private ResultActions addTrack(String requestBody) throws Exception {
@@ -83,8 +92,61 @@ class ApiControllerIT {
 
         thirdAddTrackResult.andExpect(status().isBadRequest());
     }
-
     // TODO: 10/11/23 Scoped out / left other types of error handling due to time constraints (For example we may want to treat DB connectivity issues and present a user friendly message etc)
+
+    @Test
+    void whenEditArtistName_withValidName_shouldRespondWithOkAndUpdatedData() throws Exception {
+        String newName = "newName";
+        when(metaMusicService.updateArtistInformation(anyString(), any()))
+                .thenReturn(Optional.of(new ArtistInformation(newName, List.of())));
+
+        mockMvc.perform(put("/api/v1/artists/Fleetwood+Mac/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                {
+                                 "name":"%s"
+                                 }""", newName)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(String.format("""
+                        {
+                            "name": "%s",
+                            "aliases": []
+                        }""", newName)))
+                .andDo(document("editArtistName"));
+        verify(metaMusicService).updateArtistInformation(eq(EXAMPLE_ARTIST_NAME), any());
+    }
+
+    @Test
+    void whenEditArtistName_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
+        when(metaMusicService.updateArtistInformation(anyString(), any()))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/v1/artists/nonexistingartistname/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "name":"notBlank"
+                                 }"""))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void whenEditArtistName_withInvalidNewName_shouldRespondWithBadRequest() throws Exception {
+        when(metaMusicService.updateArtistInformation(anyString(), any()))
+                .thenThrow(IllegalArgumentException.class);
+
+        mockMvc.perform(put("/api/v1/artists/valid/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "name":""
+                                 }"""))
+                .andExpect(status().isBadRequest());
+    }
+
 
     /*
 

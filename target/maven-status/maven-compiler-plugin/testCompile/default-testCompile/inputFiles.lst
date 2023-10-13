@@ -1,0 +1,10 @@
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/core/model/TrackInformationTest.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/adapter/persistence/ArtistInformationRepositoryIT.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/core/model/ArtistInformationTest.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/TestMetaMusicServiceApplication.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/core/service/MetaMusicServiceImplTest.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/MetaMusicServiceApplicationTests.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/adapter/http/ApiControllerIT.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/adapter/persistence/TrackInformationRepositoryIT.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/adapter/persistence/PersistenceIntegrationTestParent.java
+/home/kalleenberg/code/metamusic/src/test/java/com/demo/metamusic/TestConstants.java
