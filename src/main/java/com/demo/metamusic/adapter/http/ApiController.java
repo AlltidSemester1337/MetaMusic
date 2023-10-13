@@ -4,6 +4,8 @@ import com.demo.metamusic.adapter.http.dto.request.ArtistUpdateDTO;
 import com.demo.metamusic.adapter.http.dto.request.TrackInformationDTO;
 import com.demo.metamusic.adapter.http.dto.response.UpdatedArtistDTO;
 import com.demo.metamusic.adapter.http.dto.response.UpdatedTrackCatalogueLinkDTO;
+import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
+import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
 import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.util.UrlEncodingUtils;
 import com.demo.metamusic.core.model.TrackInformation;
@@ -45,9 +47,15 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        metaMusicService.addTrack(trackInformation);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new UpdatedTrackCatalogueLinkDTO(UrlEncodingUtils.getCatalogueLink(trackInformationDTO.artist())));
+        try {
+            metaMusicService.addTrack(trackInformation);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new UpdatedTrackCatalogueLinkDTO(UrlEncodingUtils.getCatalogueLink(trackInformationDTO.artist())));
+        } catch (NoArtistFoundException e) {
+            log.debug("Could not find artist", e);
+            // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is conflicting (scoped out due to time constraints)
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @PutMapping(path = "/artists/{name}/edit", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -62,13 +70,20 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        ArtistInformation updatedArtistInformation = metaMusicService.updateArtistInformation(
-                UrlEncodingUtils.decodeArtistName(artistName), newArtistInformation);
-        //catch NoArtistFoundException
-        //ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+        ArtistInformation updatedArtistInformation;
+        try {
+            updatedArtistInformation = metaMusicService.updateArtistInformation(
+                    UrlEncodingUtils.decodeArtistName(artistName), newArtistInformation);
+        } catch (NoArtistFoundException e) {
+            log.debug("Could not find artist", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (ArtistAlreadyExistsException e) {
+            log.debug("Artist with new name already exists", e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
 
         return ResponseEntity.status(HttpStatus.OK)
-                        .body(ArtistInformation.toDTO(updatedArtistInformation));
+                .body(ArtistInformation.toDTO(updatedArtistInformation));
     }
 
     /*@DeleteMapping(path = "/{brokerName}")

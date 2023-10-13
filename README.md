@@ -1,6 +1,6 @@
 # Meta Music Service
 
-API for inserting and retrieving information about artists and their tracks.
+API for inserting, updating and retrieving information about artists and their tracks.
 
 # API features / Usage
 

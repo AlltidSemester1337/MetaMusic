@@ -3,8 +3,8 @@ com/demo/metamusic/adapter/persistence/ArtistInformationRepositoryIT.class
 com/demo/metamusic/TestMetaMusicServiceApplication.class
 com/demo/metamusic/core/model/ArtistInformationTest.class
 com/demo/metamusic/adapter/persistence/PersistenceIntegrationTestParent.class
-com/demo/metamusic/adapter/persistence/TrackInformationRepositoryIT.class
 com/demo/metamusic/core/service/MetaMusicServiceImplTest.class
+com/demo/metamusic/adapter/persistence/TrackInformationRepositoryIT.class
 com/demo/metamusic/adapter/http/ApiControllerIT.class
 com/demo/metamusic/core/model/TrackInformationTest.class
 com/demo/metamusic/MetaMusicServiceApplicationTests.class

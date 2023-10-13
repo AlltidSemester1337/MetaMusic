@@ -1,7 +1,9 @@
 package com.demo.metamusic.adapter.http;
 
 import com.demo.metamusic.TestConstants;
+import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
+import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
 import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import liquibase.integration.spring.SpringLiquibase;
@@ -29,8 +31,7 @@ import java.util.Optional;
 
 import static com.demo.metamusic.TestConstants.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -80,20 +81,28 @@ class ApiControllerIT {
 
     @Test
     void whenAddTrack_withInvalidData_shouldRespondWithBadRequest() throws Exception {
-        ResultActions anotherAddTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_TITLE);
-
-        anotherAddTrackResult.andExpect(status().isBadRequest());
-
         ResultActions addTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_DURATION);
 
         addTrackResult.andExpect(status().isBadRequest());
+
+        ResultActions anotherAddTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_TITLE);
+
+        anotherAddTrackResult.andExpect(status().isBadRequest());
 
         ResultActions thirdAddTrackResult = addTrack(EXAMPLE_TRACK_INVALID_REQUEST_PAYLOAD_INVALID_RELEASE_DATE);
 
         thirdAddTrackResult.andExpect(status().isBadRequest());
     }
-    // TODO: 10/11/23 Scoped out / left other types of error handling due to time constraints (For example we may want to treat DB connectivity issues and present a user friendly message etc)
 
+    @Test
+    void whenAddTrack_withNonExistingArtist_shouldRespondWithConflict() throws Exception {
+        doThrow(NoArtistFoundException.class).when(metaMusicService).addTrack(any());
+        ResultActions addTrackResult = addTrack(EXAMPLE_TRACK_PAYLOAD);
+
+        addTrackResult.andExpect(status().isConflict());
+    }
+
+    // TODO: 10/11/23 Scoped out / left other types of error handling due to time constraints (For example we may want to treat DB connectivity issues and present a user friendly message etc)
     @Test
     void whenEditArtistName_withValidName_shouldRespondWithOkAndUpdatedData() throws Exception {
         String newName = "newName";
@@ -120,7 +129,7 @@ class ApiControllerIT {
     @Test
     void whenEditArtistName_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
-                .thenThrow(IllegalArgumentException.class);
+                .thenThrow(NoArtistFoundException.class);
 
         mockMvc.perform(put("/api/v1/artists/nonexistingartistname/edit")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -145,6 +154,21 @@ class ApiControllerIT {
                                  "name":""
                                  }"""))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenEditArtistName_withAlreadyExistingNewName_shouldRespondWithConflict() throws Exception {
+        when(metaMusicService.updateArtistInformation(anyString(), any()))
+                .thenThrow(ArtistAlreadyExistsException.class);
+
+        mockMvc.perform(put("/api/v1/artists/valid/edit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "name":"notBlank"
+                                 }"""))
+                .andExpect(status().isConflict());
     }
 
 

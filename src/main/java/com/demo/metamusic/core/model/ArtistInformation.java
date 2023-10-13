@@ -2,6 +2,7 @@ package com.demo.metamusic.core.model;
 
 import com.demo.metamusic.adapter.http.dto.request.ArtistUpdateDTO;
 import com.demo.metamusic.adapter.http.dto.response.UpdatedArtistDTO;
+import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
@@ -18,5 +19,9 @@ public record ArtistInformation(String name, List<String> aliases) {
 
     public static UpdatedArtistDTO toDTO(ArtistInformation artistInformation) {
         return new UpdatedArtistDTO(artistInformation.name(), artistInformation.aliases());
+    }
+
+    public static ArtistInformation fromEntity(ArtistInformationEntity updatedEntity) {
+        return new ArtistInformation(updatedEntity.getName(), updatedEntity.getAliases());
     }
 }

@@ -1,7 +1,9 @@
 package com.demo.metamusic.core.service;
 
 
+import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
+import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
 import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
@@ -43,7 +45,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
         log.debug("Found matching artists: {}", matchingArtists);
 
         if (matchingArtists.isEmpty()) {
-            throw new IllegalArgumentException("Could not find any artist with provided name: " + artistName);
+            throw new NoArtistFoundException("Could not find any artist with provided name: " + artistName);
         }
 
         Validate.isTrue(matchingArtists.size() == 1, "Found multiple matching artists with name: " + artistName);
@@ -53,7 +55,19 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     @Override
     public ArtistInformation updateArtistInformation(String artistName, ArtistInformation newArtistInformation) {
         ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(artistName);
+        verifyNewArtistNameDoesNotExist(newArtistInformation.name());
 
-        return null;
+        artistToUpdate.setName(newArtistInformation.name());
+        ArtistInformationEntity updatedEntity = artistInformationRepository.save(artistToUpdate);
+        return ArtistInformation.fromEntity(updatedEntity);
+    }
+
+    private void verifyNewArtistNameDoesNotExist(String artistName) {
+        List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(artistName);
+        log.debug("Found matching artists: {}", matchingArtists);
+        if (!matchingArtists.isEmpty()) {
+            throw new ArtistAlreadyExistsException("Found already existing artist with name: " + artistName);
+        }
+        ;
     }
 }
