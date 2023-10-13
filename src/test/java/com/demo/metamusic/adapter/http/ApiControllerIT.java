@@ -98,7 +98,7 @@ class ApiControllerIT {
     void whenEditArtistName_withValidName_shouldRespondWithOkAndUpdatedData() throws Exception {
         String newName = "newName";
         when(metaMusicService.updateArtistInformation(anyString(), any()))
-                .thenReturn(Optional.of(new ArtistInformation(newName, List.of())));
+                .thenReturn(new ArtistInformation(newName, List.of()));
 
         mockMvc.perform(put("/api/v1/artists/Fleetwood+Mac/edit")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +120,7 @@ class ApiControllerIT {
     @Test
     void whenEditArtistName_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
-                .thenReturn(Optional.empty());
+                .thenThrow(IllegalArgumentException.class);
 
         mockMvc.perform(put("/api/v1/artists/nonexistingartistname/edit")
                         .contentType(MediaType.APPLICATION_JSON)

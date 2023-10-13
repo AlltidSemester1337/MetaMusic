@@ -5,6 +5,7 @@ import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
+import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.model.TrackInformation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,9 @@ import java.sql.Date;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -85,7 +88,49 @@ class MetaMusicServiceImplTest {
                 TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
                 Duration.ofSeconds(3), LocalDate.EPOCH)));
     }
-    // TODO: 10/13/23 Continue writing tests and implement service functionality for updateArtistInformation
+
+    @Test
+    void givenValidUpdateArtistInformation_returnsExpectedUpdatedArtistInformation() {
+        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
+        when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
+
+        String newName = "newName";
+        ArtistInformation newArtistInformation = new ArtistInformation(
+                newName, List.of());
+        ArtistInformation updatedArtistInformation = metaMusicService.updateArtistInformation(TestConstants.EXAMPLE_ARTIST_NAME, newArtistInformation);
+
+        assertEquals(newArtistInformation, updatedArtistInformation);
+        verify(artistInformationRepository).save(eq(new ArtistInformationEntity(newName, List.of())));
+    }
+
+    @Test
+    void givenNonExistingArtist_whenCallingUpdateArtist_throwsException() {
+        when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> metaMusicService.updateArtistInformation(TestConstants.EXAMPLE_ARTIST_NAME, null));
+    }
+
+    @Test
+    void givenMultipleMatchingArtists_whenCallingUpdateArtist_shouldThrowException() {
+        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
+        when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+                .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> metaMusicService.updateArtistInformation(TestConstants.EXAMPLE_ARTIST_NAME, null));
+    }
+
+    @Test
+    void givenAlreadyExistingArtistWithNewName_whenCallingUpdateArtist_shouldThrowException() {
+        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
+        String newName = "newName";
+        when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
+        when(artistInformationRepository.findByName(eq(newName))).thenReturn(List.of(mockedArtistDto));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> metaMusicService.updateArtistInformation(TestConstants.EXAMPLE_ARTIST_NAME, null));
+    }
     /*
 
     @Test

@@ -62,13 +62,13 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        Optional<ArtistInformation> updatedArtistInformation = metaMusicService.updateArtistInformation(
+        ArtistInformation updatedArtistInformation = metaMusicService.updateArtistInformation(
                 UrlEncodingUtils.decodeArtistName(artistName), newArtistInformation);
+        //catch NoArtistFoundException
+        //ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
-        return updatedArtistInformation.map(artistInformation -> ResponseEntity.status(HttpStatus.OK)
-                        .body(ArtistInformation.toDTO(artistInformation)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .build());
+        return ResponseEntity.status(HttpStatus.OK)
+                        .body(ArtistInformation.toDTO(updatedArtistInformation));
     }
 
     /*@DeleteMapping(path = "/{brokerName}")

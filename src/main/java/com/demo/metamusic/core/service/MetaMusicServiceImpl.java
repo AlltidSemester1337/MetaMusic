@@ -29,16 +29,8 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Override
     public void addTrack(TrackInformation trackInformation) {
-        List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(trackInformation.artist());
-        log.debug("Found matching artists: {}", matchingArtists);
+        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(trackInformation.artist());
 
-        if (matchingArtists.isEmpty()) {
-            throw new IllegalArgumentException("Could not find any artist with provided name: " + trackInformation.artist());
-        }
-
-        Validate.isTrue(matchingArtists.size() == 1, "Found multiple matching artists with name: " + trackInformation.artist());
-
-        ArtistInformationEntity artistToUpdate = matchingArtists.get(0);
         TrackInformationEntity newTrack = TrackInformation.toEntity(trackInformation);
         newTrack.setArtist(artistToUpdate);
         artistToUpdate.getTracks().add(newTrack);
@@ -46,8 +38,22 @@ public class MetaMusicServiceImpl implements MetaMusicService {
         log.debug("Updated artist information: {}", updatedArtist);
     }
 
+    private ArtistInformationEntity getSingleMatchingArtistByName(String artistName) {
+        List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(artistName);
+        log.debug("Found matching artists: {}", matchingArtists);
+
+        if (matchingArtists.isEmpty()) {
+            throw new IllegalArgumentException("Could not find any artist with provided name: " + artistName);
+        }
+
+        Validate.isTrue(matchingArtists.size() == 1, "Found multiple matching artists with name: " + artistName);
+        return matchingArtists.get(0);
+    }
+
     @Override
-    public Optional<ArtistInformation> updateArtistInformation(String artistName, ArtistInformation newArtistInformation) {
-        return Optional.empty();
+    public ArtistInformation updateArtistInformation(String artistName, ArtistInformation newArtistInformation) {
+        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(artistName);
+
+        return null;
     }
 }
