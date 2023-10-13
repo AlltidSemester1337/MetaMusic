@@ -25,6 +25,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Override
     public void addTrack(TrackInformation trackInformation) {
+        // TODO: 10/13/23 Log JPA interactions in a sensible way, take a look on internet for good practices
         List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(trackInformation.artist());
 
         if (matchingArtists.isEmpty()) {

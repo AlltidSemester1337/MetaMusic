@@ -2,11 +2,10 @@ package com.demo.metamusic.adapter.http;
 
 import com.demo.metamusic.adapter.http.dto.TrackInformationDTO;
 import com.demo.metamusic.adapter.http.dto.UpdatedTrackCatalogueLinkDTO;
-import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
-import com.demo.metamusic.core.model.LinkUtils;
+import com.demo.metamusic.core.util.LinkUtils;
 import com.demo.metamusic.core.model.TrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +18,7 @@ import java.time.format.DateTimeParseException;
         path = "/api/v1",
         produces = MediaType.APPLICATION_JSON_VALUE
 )
+@Slf4j
 public class ApiController {
 
     private final MetaMusicService metaMusicService;
@@ -33,10 +33,11 @@ public class ApiController {
             @RequestBody final TrackInformationDTO trackInformationDTO) {
 
         TrackInformation trackInformation;
-        // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
         try {
             trackInformation = TrackInformation.fromDTO(trackInformationDTO);
-        } catch (DateTimeParseException | IllegalArgumentException ignored) {
+        } catch (DateTimeParseException | IllegalArgumentException e) {
+            log.info("Caught exception on parsing TrackInformationDTO", e);
+            // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 

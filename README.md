@@ -14,6 +14,10 @@ Example request, response and curl can be found in
 
 Upon building project and executing integration tests
 
+Also enabled for the following actuator endpoints:
+
+    /actuator/httpexchanges
+
 # Local run prerequisites
 
 Set up and have postgresql server running, define proper values for the following env variables:
