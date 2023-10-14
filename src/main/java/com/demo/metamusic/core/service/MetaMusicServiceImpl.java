@@ -13,8 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 public class MetaMusicServiceImpl implements MetaMusicService {
@@ -53,11 +52,16 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     }
 
     @Override
-    public ArtistInformation updateArtistInformation(String artistName, ArtistInformation newArtistInformation) {
-        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(artistName);
+    public ArtistInformation updateArtistInformation(String oldArtistName, ArtistInformation newArtistInformation) {
         verifyNewArtistNameDoesNotExist(newArtistInformation.name());
+        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(oldArtistName);
 
         artistToUpdate.setName(newArtistInformation.name());
+
+        Set<String> aliases = new HashSet<>(artistToUpdate.getAliases());
+        aliases.addAll(newArtistInformation.aliases());
+        artistToUpdate.setAliases(aliases);
+
         ArtistInformationEntity updatedEntity = artistInformationRepository.save(artistToUpdate);
         log.debug("Updated artist information: {}", updatedEntity);
         return ArtistInformation.fromEntity(updatedEntity);

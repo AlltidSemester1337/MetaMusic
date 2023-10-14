@@ -1,4 +1,6 @@
 package com.demo.metamusic.adapter.http.dto.request;
 
-public record ArtistUpdateDTO(String name) {
+import java.util.Set;
+
+public record ArtistUpdateDTO(String newName, Set<String> aliases) {
 }

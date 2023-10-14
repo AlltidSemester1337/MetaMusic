@@ -6,6 +6,7 @@ import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity(name="artists")
 @Data
@@ -17,7 +18,7 @@ public class ArtistInformationEntity {
 
     private String name;
 
-    private List<String> aliases;
+    private Set<String> aliases;
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
     private List<TrackInformationEntity> tracks = new ArrayList<>();
@@ -26,7 +27,7 @@ public class ArtistInformationEntity {
         tracks = new ArrayList<>();
     }
 
-    public ArtistInformationEntity(String name, List<String> aliases) {
+    public ArtistInformationEntity(String name, Set<String> aliases) {
         this.name = name;
         this.aliases = aliases;
     }

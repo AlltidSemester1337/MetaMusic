@@ -10,5 +10,5 @@ public interface MetaMusicService {
 
     void addTrack(String artistName, TrackInformation trackInformation);
 
-    ArtistInformation updateArtistInformation(String artistName, ArtistInformation newArtistInformation);
+    ArtistInformation updateArtistInformation(String oldArtistName, ArtistInformation newArtistInformation);
 }

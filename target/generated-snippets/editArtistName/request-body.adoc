@@ -1,6 +1,6 @@
 [source,json,options="nowrap"]
 ----
 {
- "name":"newName"
+ "newName":"newArtistName"
  }
 ----

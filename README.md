@@ -4,7 +4,7 @@ API for inserting, updating and retrieving information about artists and their t
 
 # API features / Usage
 
-##    * Add track to artist catalogue
+##     * Add track to artist catalogue
 
 **PUT /api/v1/<artistName>/tracks**
 
@@ -12,7 +12,15 @@ Example request, response and curl can be found in
 
     /target/generated-snippets/addTrack
 
-Upon building project and executing integration tests
+##     * Edit artist name or add new alias
+
+**PUT /api/v1/<artistName>**
+
+Example request, response and curl can be found in
+
+    /target/generated-snippets/editArtist
+
+All snippets genereted upon building project and executing integration tests
 
 Also enabled for the following actuator endpoints:
 

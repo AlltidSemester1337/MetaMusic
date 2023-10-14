@@ -10,7 +10,10 @@ import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.util.UrlEncodingUtils;
 import com.demo.metamusic.core.model.TrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
+import io.micrometer.common.util.StringUtils;
+import liquibase.util.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,9 +67,16 @@ public class ApiController {
     public ResponseEntity<UpdatedArtistDTO> editArtist(
             @PathVariable("name") final String artistName,
             @RequestBody final ArtistUpdateDTO artistUpdateDTO) {
+        String oldArtistNameNormalized = UrlEncodingUtils.decodeArtistName(artistName);
+
+        if (isNoDataToUpdate(oldArtistNameNormalized, artistUpdateDTO)) {
+            log.info("Received update request without any data to update {}, {}", oldArtistNameNormalized, artistUpdateDTO);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
         ArtistInformation newArtistInformation;
         try {
-            newArtistInformation = ArtistInformation.fromDTO(artistUpdateDTO);
+            newArtistInformation = ArtistInformation.fromDTO(oldArtistNameNormalized, artistUpdateDTO);
         } catch (IllegalArgumentException e) {
             log.info("Caught exception on parsing ArtistUpdateDTO", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -74,8 +84,7 @@ public class ApiController {
 
         ArtistInformation updatedArtistInformation;
         try {
-            updatedArtistInformation = metaMusicService.updateArtistInformation(
-                    UrlEncodingUtils.decodeArtistName(artistName), newArtistInformation);
+            updatedArtistInformation = metaMusicService.updateArtistInformation(oldArtistNameNormalized, newArtistInformation);
         } catch (NoArtistFoundException e) {
             log.info("Could not find artist", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -86,6 +95,12 @@ public class ApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ArtistInformation.toDTO(updatedArtistInformation));
+    }
+
+    private boolean isNoDataToUpdate(String oldArtistName, ArtistUpdateDTO artistUpdateDTO) {
+        boolean aliasesIsEmptyOrNull = artistUpdateDTO.aliases() == null || artistUpdateDTO.aliases().isEmpty();
+        boolean newNameIsBlankOrSameAsOld = StringUtils.isBlank(artistUpdateDTO.newName()) || artistUpdateDTO.newName().equals(oldArtistName);
+        return aliasesIsEmptyOrNull && newNameIsBlankOrSameAsOld;
     }
 
     /*@DeleteMapping(path = "/{brokerName}")

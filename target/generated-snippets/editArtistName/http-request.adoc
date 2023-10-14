@@ -3,10 +3,10 @@
 PUT /api/v1/artists/Fleetwood+Mac HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-Content-Length: 22
+Content-Length: 31
 Host: localhost:8080
 
 {
- "name":"newName"
+ "newName":"newArtistName"
  }
 ----
