@@ -6,7 +6,7 @@ API for inserting, updating and retrieving information about artists and their t
 
 ##    * Add track to artist catalogue
 
-**PUT /api/v1/tracks/add**
+**PUT /api/v1/<artistName>/tracks**
 
 Example request, response and curl can be found in
 

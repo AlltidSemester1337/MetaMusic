@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface MetaMusicService {
 
 
-    void addTrack(TrackInformation trackInformation);
+    void addTrack(String artistName, TrackInformation trackInformation);
 
     ArtistInformation updateArtistInformation(String artistName, ArtistInformation newArtistInformation);
 }

@@ -8,11 +8,10 @@ import java.sql.Date;
 import java.time.Duration;
 import java.time.LocalDate;
 
-public record TrackInformation(String title, String artist, String genre, Duration duration,
+public record TrackInformation(String title, String genre, Duration duration,
                                LocalDate releaseDate) {
     public TrackInformation {
         Validate.notBlank(title);
-        Validate.notBlank(artist);
         Validate.notBlank(genre);
     }
 
@@ -20,7 +19,7 @@ public record TrackInformation(String title, String artist, String genre, Durati
         Duration duration = parseDuration(trackInformationDTO.duration());
         LocalDate releaseDate = parseReleaseDate(trackInformationDTO.releaseDate());
 
-        return new TrackInformation(trackInformationDTO.title(), trackInformationDTO.artist(),
+        return new TrackInformation(trackInformationDTO.title(),
                 trackInformationDTO.genre(), duration, releaseDate);
     }
 

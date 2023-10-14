@@ -30,8 +30,8 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     }
 
     @Override
-    public void addTrack(TrackInformation trackInformation) {
-        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(trackInformation.artist());
+    public void addTrack(String artistName, TrackInformation trackInformation) {
+        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(artistName);
 
         TrackInformationEntity newTrack = TrackInformation.toEntity(trackInformation);
         newTrack.setArtist(artistToUpdate);

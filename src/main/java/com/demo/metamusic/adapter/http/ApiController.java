@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(
@@ -34,8 +33,9 @@ public class ApiController {
         this.metaMusicService = metaMusicService;
     }
 
-    @PutMapping(path = "/tracks/add", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/artists/{name}/tracks", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedTrackCatalogueLinkDTO> addTrack(
+            @PathVariable("name") final String artistName,
             @RequestBody final TrackInformationDTO trackInformationDTO) {
 
         TrackInformation trackInformation;
@@ -48,17 +48,19 @@ public class ApiController {
         }
 
         try {
-            metaMusicService.addTrack(trackInformation);
+            metaMusicService.addTrack(UrlEncodingUtils.decodeArtistName(artistName), trackInformation);
+            String updatedCatalogueLink = "/api/v1/artists/" + artistName + "/tracks";
+
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new UpdatedTrackCatalogueLinkDTO(UrlEncodingUtils.getCatalogueLink(trackInformationDTO.artist())));
+                    .body(new UpdatedTrackCatalogueLinkDTO(updatedCatalogueLink));
         } catch (NoArtistFoundException e) {
             log.info("Could not find artist", e);
             // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is conflicting (scoped out due to time constraints)
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-    @PutMapping(path = "/artists/{name}/edit", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/artists/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedArtistDTO> editArtist(
             @PathVariable("name") final String artistName,
             @RequestBody final ArtistUpdateDTO artistUpdateDTO) {

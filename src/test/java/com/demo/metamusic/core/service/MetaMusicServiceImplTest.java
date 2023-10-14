@@ -41,7 +41,7 @@ class MetaMusicServiceImplTest {
     private AutoCloseable autoCloseable;
     private final ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS));
     private final TrackInformation trackInformation = new TrackInformation(
-            TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
+            TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_GENRE,
             Duration.ofSeconds(3), LocalDate.EPOCH);
 
     @BeforeEach
@@ -60,10 +60,9 @@ class MetaMusicServiceImplTest {
         when(mockedArtistDto.getId()).thenReturn(artistId);
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
 
-        TrackInformation newTrack = trackInformation;
-        metaMusicService.addTrack(newTrack);
+        metaMusicService.addTrack(TestConstants.EXAMPLE_ARTIST_NAME, trackInformation);
 
-        TrackInformationEntity expected = TrackInformation.toEntity(newTrack);
+        TrackInformationEntity expected = TrackInformation.toEntity(trackInformation);
         expected.setArtist(mockedArtistDto);
         verify(mockedArtistDto.getTracks()).add(eq(expected));
         verify(artistInformationRepository).save(eq(mockedArtistDto));
@@ -78,14 +77,14 @@ class MetaMusicServiceImplTest {
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
 
-        assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(trackInformation));
+        assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(TestConstants.EXAMPLE_ARTIST_NAME, trackInformation));
     }
 
     @Test
     void givenNoMatchingArtistsForTrack_throwsException() {
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
 
-        assertThrows(NoArtistFoundException.class, () -> metaMusicService.addTrack(trackInformation));
+        assertThrows(NoArtistFoundException.class, () -> metaMusicService.addTrack(TestConstants.EXAMPLE_ARTIST_NAME, trackInformation));
     }
 
     @Test

@@ -64,16 +64,16 @@ class ApiControllerIT {
         ResultActions registerResult = addTrack(EXAMPLE_TRACK_PAYLOAD);
 
         registerResult.andExpect(status().isCreated())
-                .andExpect(content().json("""
+                .andExpect(content().json(String.format("""
                                 {
-                          "updatedCatalogueLink": "/api/v1/artists/tracks?artistName=Fleetwood+Mac"
-                        }"""))
+                          "updatedCatalogueLink": "/api/v1/artists/%s/tracks"
+                        }""", EXAMPLE_ARTIST_NAME_URL_ENCODED)))
                 .andDo(document("addTrack"));
-        verify(metaMusicService).addTrack(any());
+        verify(metaMusicService).addTrack(eq(EXAMPLE_ARTIST_NAME), any());
     }
 
     private ResultActions addTrack(String requestBody) throws Exception {
-        return mockMvc.perform(put("/api/v1/tracks/add")
+        return mockMvc.perform(put("/api/v1/artists/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(requestBody));
@@ -95,11 +95,11 @@ class ApiControllerIT {
     }
 
     @Test
-    void whenAddTrack_withNonExistingArtist_shouldRespondWithConflict() throws Exception {
-        doThrow(NoArtistFoundException.class).when(metaMusicService).addTrack(any());
+    void whenAddTrack_withNonExistingArtist_shouldRespondWithNotFound() throws Exception {
+        doThrow(NoArtistFoundException.class).when(metaMusicService).addTrack(anyString(), any());
         ResultActions addTrackResult = addTrack(EXAMPLE_TRACK_PAYLOAD);
 
-        addTrackResult.andExpect(status().isConflict());
+        addTrackResult.andExpect(status().isNotFound());
     }
 
     // TODO: 10/11/23 Scoped out / left other types of error handling due to time constraints (For example we may want to treat DB connectivity issues and present a user friendly message etc)
@@ -109,7 +109,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenReturn(new ArtistInformation(newName, List.of()));
 
-        mockMvc.perform(put("/api/v1/artists/Fleetwood+Mac/edit")
+        mockMvc.perform(put("/api/v1/artists/Fleetwood+Mac")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(String.format("""
@@ -131,7 +131,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(NoArtistFoundException.class);
 
-        mockMvc.perform(put("/api/v1/artists/nonexistingartistname/edit")
+        mockMvc.perform(put("/api/v1/artists/nonexistingartistname")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -146,7 +146,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(IllegalArgumentException.class);
 
-        mockMvc.perform(put("/api/v1/artists/valid/edit")
+        mockMvc.perform(put("/api/v1/artists/valid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -161,7 +161,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(ArtistAlreadyExistsException.class);
 
-        mockMvc.perform(put("/api/v1/artists/valid/edit")
+        mockMvc.perform(put("/api/v1/artists/valid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -170,6 +170,23 @@ class ApiControllerIT {
                                  }"""))
                 .andExpect(status().isConflict());
     }
+
+    /*@Test
+    void whenFetchArtistTracks_withValidArtistName_shouldRespondWithOkAndExpectedContent() throws Exception {
+        //when(metaMusicService.updateArtistInformation(anyString(), any()))
+        //        .thenThrow(ArtistAlreadyExistsException.class);
+
+        mockMvc.perform(put("/api/v1/artists/" + TestConstants.EXAMPLE_ARTIST_NAME + "/tracks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                 "name":"notBlank"
+                                 }"""))
+                .andExpect(status().isConflict());
+    }
+
+     */
 
 
     /*

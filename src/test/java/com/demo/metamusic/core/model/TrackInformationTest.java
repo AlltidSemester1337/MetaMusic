@@ -16,10 +16,9 @@ class TrackInformationTest {
     void givenValidDTO_shouldConvertIntoExpectedResult() {
 
         TrackInformationDTO trackInformationDTO =
-                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, TestConstants.EXAMPLE_RELEASE_DATE_TEXT);
-        TrackInformation expected = new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE,
-                TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
+        TrackInformation expected = new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
                 TestConstants.EXAMPLE_TRACK_RELEASE_DATE);
 
         assertEquals(expected, TrackInformation.fromDTO(trackInformationDTO));
@@ -29,7 +28,7 @@ class TrackInformationTest {
     void givenDTOWithInvalidDuration_shouldThrowException() {
 
         TrackInformationDTO trackInformationDTO =
-                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE,
                         TestConstants.EXAMPLE_GENRE, "4:66", TestConstants.EXAMPLE_RELEASE_DATE_TEXT);
 
         assertThrows(IllegalArgumentException.class, () -> TrackInformation.fromDTO(trackInformationDTO));
@@ -39,11 +38,11 @@ class TrackInformationTest {
     void givenDTOWithInvalidDate_shouldThrowException() {
 
         TrackInformationDTO trackInformationDTOInvalidDateFormat =
-                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, "1997/04/12");
 
         TrackInformationDTO trackInformationDTOInvalidDate =
-                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, "1997/04/66");
 
         assertThrows(DateTimeParseException.class, () -> TrackInformation.fromDTO(trackInformationDTOInvalidDateFormat));
@@ -53,7 +52,7 @@ class TrackInformationTest {
     @Test
     void givenValidTrackInformation_convertsToExpectedDTO() {
         TrackInformation trackInformation =
-                new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
+                new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
                         TestConstants.EXAMPLE_TRACK_RELEASE_DATE);
         TrackInformationEntity expected = new TrackInformationEntity(TestConstants.EXAMPLE_TRACK_TITLE,
