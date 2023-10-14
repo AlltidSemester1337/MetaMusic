@@ -52,7 +52,7 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new UpdatedTrackCatalogueLinkDTO(UrlEncodingUtils.getCatalogueLink(trackInformationDTO.artist())));
         } catch (NoArtistFoundException e) {
-            log.debug("Could not find artist", e);
+            log.info("Could not find artist", e);
             // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is conflicting (scoped out due to time constraints)
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -75,10 +75,10 @@ public class ApiController {
             updatedArtistInformation = metaMusicService.updateArtistInformation(
                     UrlEncodingUtils.decodeArtistName(artistName), newArtistInformation);
         } catch (NoArtistFoundException e) {
-            log.debug("Could not find artist", e);
+            log.info("Could not find artist", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (ArtistAlreadyExistsException e) {
-            log.debug("Artist with new name already exists", e);
+            log.info("Artist with new name already exists", e);
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 

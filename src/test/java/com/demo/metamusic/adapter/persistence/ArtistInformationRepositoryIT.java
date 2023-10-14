@@ -42,4 +42,19 @@ class ArtistInformationRepositoryIT extends PersistenceIntegrationTestParent {
         assertEquals(1, savedTracks.size());
         assertEquals(expectedTrack, savedTracks.get(0));
     }
+
+    @Test
+    void givenValidArtistNameUpdateInformation_shouldPersistChangesOnSave() {
+        String oldName = "oldName";
+        ArtistInformationEntity oldArtist = new ArtistInformationEntity(oldName, List.of());
+        ArtistInformationEntity oldArtistEntity = artistInformationRepository.save(oldArtist);
+
+        assertEquals(oldArtistEntity, artistInformationRepository.findByName(oldName).get(0));
+
+        oldArtist.setName("newName");
+        artistInformationRepository.save(oldArtist);
+
+        assertTrue(artistInformationRepository.findByName(oldName).isEmpty());
+        assertEquals(oldArtistEntity, artistInformationRepository.findById(oldArtistEntity.getId()).get());
+    }
 }

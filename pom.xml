@@ -16,6 +16,7 @@
     <properties>
         <java.version>17</java.version>
     </properties>
+    <!-- TODO: scoped out due to time constraints but we should look into dependency trimming to reduce the fat jar size -->
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

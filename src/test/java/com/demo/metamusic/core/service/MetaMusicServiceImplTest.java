@@ -39,6 +39,10 @@ class MetaMusicServiceImplTest {
     @InjectMocks
     private MetaMusicServiceImpl metaMusicService;
     private AutoCloseable autoCloseable;
+    private final ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS));
+    private final TrackInformation trackInformation = new TrackInformation(
+            TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
+            Duration.ofSeconds(3), LocalDate.EPOCH);
 
     @BeforeEach
     void setUp() {
@@ -53,12 +57,10 @@ class MetaMusicServiceImplTest {
     @Test
     void givenValidTrackInformation_makesNecessaryCallsToPersistArtistData() {
         long artistId = 1L;
-        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class, withSettings().defaultAnswer(RETURNS_DEEP_STUBS));
         when(mockedArtistDto.getId()).thenReturn(artistId);
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
 
-        TrackInformation newTrack = new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME,
-                TestConstants.EXAMPLE_GENRE, Duration.ofSeconds(3), LocalDate.EPOCH);
+        TrackInformation newTrack = trackInformation;
         metaMusicService.addTrack(newTrack);
 
         TrackInformationEntity expected = TrackInformation.toEntity(newTrack);
@@ -73,22 +75,17 @@ class MetaMusicServiceImplTest {
     //  or if it should be considered shared ownership but regardless it may be good to have the track show up as result for all contributing artists.
     @Test
     void givenMultipleMatchingArtistsForTrack_throwsException() {
-        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
 
-        assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(new TrackInformation(
-                TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
-                Duration.ofSeconds(3), LocalDate.EPOCH)));
+        assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(trackInformation));
     }
 
     @Test
     void givenNoMatchingArtistsForTrack_throwsException() {
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
 
-        assertThrows(NoArtistFoundException.class, () -> metaMusicService.addTrack(new TrackInformation(
-                TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_ARTIST_NAME, TestConstants.EXAMPLE_GENRE,
-                Duration.ofSeconds(3), LocalDate.EPOCH)));
+        assertThrows(NoArtistFoundException.class, () -> metaMusicService.addTrack(trackInformation));
     }
 
     @Test
@@ -118,7 +115,6 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenMultipleMatchingArtists_whenCallingUpdateArtist_shouldThrowException() {
-        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
 
@@ -128,7 +124,6 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenAlreadyExistingArtistWithNewName_whenCallingUpdateArtist_shouldThrowException() {
-        ArtistInformationEntity mockedArtistDto = mock(ArtistInformationEntity.class);
         String newName = "newName";
         when(artistInformationRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
         when(artistInformationRepository.findByName(eq(newName))).thenReturn(List.of(mockedArtistDto));

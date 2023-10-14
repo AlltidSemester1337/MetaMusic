@@ -59,15 +59,16 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
         artistToUpdate.setName(newArtistInformation.name());
         ArtistInformationEntity updatedEntity = artistInformationRepository.save(artistToUpdate);
+        log.debug("Updated artist information: {}", updatedEntity);
         return ArtistInformation.fromEntity(updatedEntity);
     }
 
     private void verifyNewArtistNameDoesNotExist(String artistName) {
         List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(artistName);
         log.debug("Found matching artists: {}", matchingArtists);
+
         if (!matchingArtists.isEmpty()) {
             throw new ArtistAlreadyExistsException("Found already existing artist with name: " + artistName);
         }
-        ;
     }
 }
