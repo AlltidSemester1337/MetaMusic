@@ -23,15 +23,20 @@ public record TrackInformation(String title, String genre, Duration duration,
                 trackInformationDTO.genre(), duration, releaseDate);
     }
 
+    public static TrackInformationDTO toDTO(TrackInformation trackInformation) {
+        return new TrackInformationDTO(trackInformation.title(), trackInformation.genre(),
+                convertDurationToString(trackInformation.duration()), trackInformation.releaseDate().toString());
+    }
+
     public static TrackInformationEntity toEntity(TrackInformation trackInformation) {
-        String duration = toString(trackInformation.duration());
+        String duration = convertDurationToString(trackInformation.duration());
         Date releaseDate = Date.valueOf(trackInformation.releaseDate());
 
         return new TrackInformationEntity(trackInformation.title(),
                 trackInformation.genre(), duration, releaseDate);
     }
 
-    private static String toString(Duration duration) {
+    private static String convertDurationToString(Duration duration) {
         long minutes = duration.toMinutes();
         return minutes + ":" + duration.minusMinutes(minutes).toSeconds();
     }
@@ -44,5 +49,10 @@ public record TrackInformation(String title, String genre, Duration duration,
 
     private static LocalDate parseReleaseDate(String releaseDate) {
         return LocalDate.parse(releaseDate);
+    }
+
+    public static TrackInformation fromEntity(TrackInformationEntity trackInformationEntity) {
+        return new TrackInformation(trackInformationEntity.getTitle(), trackInformationEntity.getGenre(),
+                parseDuration(trackInformationEntity.getDuration()), parseReleaseDate(trackInformationEntity.getReleaseDate().toString()));
     }
 }

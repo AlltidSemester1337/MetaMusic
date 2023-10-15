@@ -1,7 +1,6 @@
 package com.demo.metamusic;
 
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
-import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -14,9 +13,6 @@ class MetaMusicServiceApplicationTests {
 
 	@MockBean
 	private ArtistInformationRepository artistInformationRepository;
-
-	@MockBean
-	private TrackInformationRepository trackInformationRepository;
 
 	@Test
 	void contextLoads() {

@@ -6,7 +6,7 @@ API for inserting, updating and retrieving information about artists and their t
 
 ##     * Add track to artist catalogue
 
-**PUT /api/v1/<artistName>/tracks**
+**PUT /api/v1/artists/byname/<artistName>/tracks**
 
 Example request, response and curl can be found in
 
@@ -14,11 +14,19 @@ Example request, response and curl can be found in
 
 ##     * Edit artist name or add new alias
 
-**PUT /api/v1/<artistName>**
+**PUT /api/v1/artists/byname/<artistName>**
 
 Example request, response and curl can be found in
 
     /target/generated-snippets/editArtist
+
+##     * Fetch all tracks paginated for artist by name
+
+**GET /api/v1/artists/byname/<artistName>/tracks**
+
+Example request, response and curl can be found in
+
+    /target/generated-snippets/fetchTracks
 
 All snippets genereted upon building project and executing integration tests
 

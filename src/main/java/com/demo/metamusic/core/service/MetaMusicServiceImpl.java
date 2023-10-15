@@ -4,7 +4,6 @@ package com.demo.metamusic.core.service;
 import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
 import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
-import com.demo.metamusic.adapter.persistence.TrackInformationRepository;
 import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
 import com.demo.metamusic.core.model.ArtistInformation;
@@ -13,6 +12,9 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
@@ -20,12 +22,9 @@ import java.util.*;
 public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Autowired
-    private final TrackInformationRepository trackInformationRepository;
-    @Autowired
     private ArtistInformationRepository artistInformationRepository;
 
-    public MetaMusicServiceImpl(TrackInformationRepository trackInformationRepository, ArtistInformationRepository artistInformationRepository) {
-        this.trackInformationRepository = trackInformationRepository;
+    public MetaMusicServiceImpl(ArtistInformationRepository artistInformationRepository) {
         this.artistInformationRepository = artistInformationRepository;
     }
 
@@ -67,6 +66,14 @@ public class MetaMusicServiceImpl implements MetaMusicService {
         ArtistInformationEntity updatedEntity = artistInformationRepository.save(artistToUpdate);
         log.debug("Updated artist information: {}", updatedEntity);
         return ArtistInformation.fromEntity(updatedEntity);
+    }
+
+    @Override
+    public Page<TrackInformation> getArtistTracksPaginated(String artistName, int page, int numTracks) {
+        ArtistInformationEntity artistInformation = getSingleMatchingArtistByName(artistName);
+        PageRequest pageRequest = PageRequest.of(page, numTracks);
+        return artistInformationRepository.fetchTracksPaginated(artistInformation.getId(), pageRequest)
+                .map(TrackInformation::fromEntity);
     }
 
     private void verifyNewArtistNameDoesNotExist(String artistName) {

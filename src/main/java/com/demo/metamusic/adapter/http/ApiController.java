@@ -11,9 +11,8 @@ import com.demo.metamusic.core.util.UrlEncodingUtils;
 import com.demo.metamusic.core.model.TrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import io.micrometer.common.util.StringUtils;
-import liquibase.util.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -101,6 +100,23 @@ public class ApiController {
         boolean aliasesIsEmptyOrNull = artistUpdateDTO.aliases() == null || artistUpdateDTO.aliases().isEmpty();
         boolean newNameIsBlankOrSameAsOld = StringUtils.isBlank(artistUpdateDTO.newName()) || artistUpdateDTO.newName().equals(oldArtistName);
         return aliasesIsEmptyOrNull && newNameIsBlankOrSameAsOld;
+    }
+
+    // TODO: 2023-10-15 Since we are paginating we should consider the order for optimization and user value purpose
+    // most likely this could mean order by release date newest first, however this was scoped out since it wasn't requested in the requirements
+    @GetMapping(path = "/artists/byname/{name}/tracks")
+    public ResponseEntity<Page<TrackInformationDTO>> fetchTracks(
+            @PathVariable("name") final String artistName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int max) {
+        Page<TrackInformation> artistTracks;
+        try {
+            artistTracks = metaMusicService.getArtistTracksPaginated(UrlEncodingUtils.decodeArtistName(artistName), page, max);
+        } catch (NoArtistFoundException e) {
+            log.info("Could not find artist", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(artistTracks.map(TrackInformation::toDTO));
     }
 
     /*@DeleteMapping(path = "/{brokerName}")

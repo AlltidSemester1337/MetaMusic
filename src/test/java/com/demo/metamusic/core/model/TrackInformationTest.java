@@ -18,10 +18,8 @@ class TrackInformationTest {
         TrackInformationDTO trackInformationDTO =
                 new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE,
                         TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, TestConstants.EXAMPLE_RELEASE_DATE_TEXT);
-        TrackInformation expected = new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE, TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
-                TestConstants.EXAMPLE_TRACK_RELEASE_DATE);
 
-        assertEquals(expected, TrackInformation.fromDTO(trackInformationDTO));
+        assertEquals(TestConstants.EXAMPLE_TRACK, TrackInformation.fromDTO(trackInformationDTO));
     }
 
     @Test
@@ -50,14 +48,27 @@ class TrackInformationTest {
     }
 
     @Test
-    void givenValidTrackInformation_convertsToExpectedDTO() {
-        TrackInformation trackInformation =
-                new TrackInformation(TestConstants.EXAMPLE_TRACK_TITLE,
-                        TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_TRACK_DURATION,
-                        TestConstants.EXAMPLE_TRACK_RELEASE_DATE);
+    void givenValidTrackInformation_convertsToExpectedEntity() {
         TrackInformationEntity expected = new TrackInformationEntity(TestConstants.EXAMPLE_TRACK_TITLE,
                 TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, Date.valueOf("1977-02-04"));
 
-        assertEquals(expected, TrackInformation.toEntity(trackInformation));
+        assertEquals(expected, TrackInformation.toEntity(TestConstants.EXAMPLE_TRACK));
+    }
+
+    @Test
+    void givenValidTrackInformation_convertsToExpectedDto() {
+        TrackInformationDTO expected = new TrackInformationDTO(TestConstants.EXAMPLE_TRACK_TITLE,
+                TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, "1977-02-04");
+
+        assertEquals(expected, TrackInformation.toDTO(TestConstants.EXAMPLE_TRACK));
+    }
+
+    @Test
+    void givenValidEntity_shouldConvertIntoExpectedResult() {
+        TrackInformationEntity trackInformationEntity =
+                new TrackInformationEntity(TestConstants.EXAMPLE_TRACK_TITLE,
+                        TestConstants.EXAMPLE_GENRE, TestConstants.EXAMPLE_DURATION_TEXT, Date.valueOf(TestConstants.EXAMPLE_TRACK_RELEASE_DATE));
+
+        assertEquals(TestConstants.EXAMPLE_TRACK, TrackInformation.fromEntity(trackInformationEntity));
     }
 }

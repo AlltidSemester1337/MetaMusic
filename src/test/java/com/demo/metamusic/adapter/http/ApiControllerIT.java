@@ -3,6 +3,7 @@ package com.demo.metamusic.adapter.http;
 import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
 import com.demo.metamusic.core.model.ArtistInformation;
+import com.demo.metamusic.core.model.TrackInformation;
 import com.demo.metamusic.core.service.MetaMusicService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
@@ -105,13 +109,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenReturn(updatedArtistInformation);
 
-        mockMvc.perform(put("/api/v1/artists/byname/Fleetwood+Mac")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(String.format("""
-                                {
-                                 "newName":"%s"
-                                 }""", newName)))
+        sendUpdateArtistInformationRequest(newName)
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("""
                         {
@@ -122,18 +120,22 @@ class ApiControllerIT {
         verify(metaMusicService).updateArtistInformation(eq(EXAMPLE_ARTIST_NAME), eq(updatedArtistInformation));
     }
 
+    private ResultActions sendUpdateArtistInformationRequest(String newName) throws Exception {
+        return mockMvc.perform(put("/api/v1/artists/byname/" + EXAMPLE_ARTIST_NAME_URL_ENCODED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                        {
+                         "newName":"%s"
+                         }""", newName)));
+    }
+
     @Test
     void whenEditArtistInformation_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(NoArtistFoundException.class);
 
-        mockMvc.perform(put("/api/v1/artists/byname/nonexistingartistname")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                 "newName":"notBlank"
-                                 }"""))
+        sendUpdateArtistInformationRequest("valid")
                 .andExpect(status().isNotFound());
     }
 
@@ -142,13 +144,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(IllegalArgumentException.class);
 
-        mockMvc.perform(put("/api/v1/artists/byname/valid")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                 "newName":""
-                                 }"""))
+        sendUpdateArtistInformationRequest("")
                 .andExpect(status().isBadRequest());
     }
 
@@ -162,13 +158,7 @@ class ApiControllerIT {
                                  }"""))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(put("/api/v1/artists/byname/same")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                "newName":"same"
-                                 }"""))
+        sendUpdateArtistInformationRequest("Fleetwood Mac")
                 .andExpect(status().isBadRequest());
     }
 
@@ -177,13 +167,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(ArtistAlreadyExistsException.class);
 
-        mockMvc.perform(put("/api/v1/artists/byname/valid")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                 "newName":"notBlank"
-                                 }"""))
+        sendUpdateArtistInformationRequest("valid")
                 .andExpect(status().isConflict());
     }
 
@@ -212,69 +196,51 @@ class ApiControllerIT {
         verify(metaMusicService).updateArtistInformation(eq(EXAMPLE_ARTIST_NAME), eq(newArtistInformation));
     }
 
-    /*@Test
-    void whenFetchArtistTracks_withValidArtistName_shouldRespondWithOkAndExpectedContent() throws Exception {
-        //when(metaMusicService.updateArtistInformation(anyString(), any()))
-        //        .thenThrow(ArtistAlreadyExistsException.class);
+    @Test
+    void whenFetchArtistTracksPaginated_withValidArtistName_shouldRespondWithOkAndExpectedContent() throws Exception {
+        TrackInformation secondTrack = new TrackInformation(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
+        Page<TrackInformation> pageResponse = new PageImpl<>(List.of(EXAMPLE_TRACK, secondTrack));
+        when(metaMusicService.getArtistTracksPaginated(anyString(), anyInt(), anyInt()))
+                .thenReturn(pageResponse);
 
-        mockMvc.perform(get("/api/v1/artists/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks")
+        mockMvc.perform(get("/api/v1/artists/byname/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(content().json(String.format(EXAMPLE_PAGINATION_RESPONSE_TEMPLATE, EXAMPLE_TRACK_TITLE, EXAMPLE_GENRE, EXAMPLE_DURATION_TEXT,
+                        EXAMPLE_RELEASE_DATE_TEXT, EXAMPLE_TRACK_TITLE, EXAMPLE_GENRE, EXAMPLE_DURATION_TEXT, EXAMPLE_RELEASE_DATE_TEXT)))
                 .andDo(document("fetchTracks"));
-    }*/
-
-
-    /*
+    }
 
     @Test
-    void whenGet_withValidData_shouldRespondWithExpectedOkResponse() throws Exception {
-        registerBroker();
-        mockMvc.perform(get("/mqtt/" + TestConstants.BROKER_NAME)
+    void whenFetchArtistTracksPaginated_testMultiplePages_shouldRespondWithOkAndExpectedContent() throws Exception {
+        TrackInformation secondTrack = new TrackInformation(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
+        Page<TrackInformation> firstPageResponse = new PageImpl<>(List.of(EXAMPLE_TRACK), PageRequest.of(0, 1), 2);
+        Page<TrackInformation> secondPageResponse = new PageImpl<>(List.of(secondTrack), PageRequest.of(1, 1), 2);
+        when(metaMusicService.getArtistTracksPaginated(anyString(), anyInt(), eq(1)))
+                .thenReturn(firstPageResponse, secondPageResponse);
+
+        mockMvc.perform(get("/api/v1/artists/byname/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks?max=1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json("""
-                                {
-                          "hostName": "hostName",
-                          "port": -1
-                        }"""));
-    }
+                .andExpect(content().json(String.format(EXAMPLE_RESPONSE_PAGINATION_FIRST_PAGE_TEMPLATE, EXAMPLE_TRACK_TITLE, EXAMPLE_GENRE, EXAMPLE_DURATION_TEXT,
+                        EXAMPLE_RELEASE_DATE_TEXT)));
 
-    @Test
-    void whenDelete_withValidBrokername_shouldRespondWithOkResponse() throws Exception {
-        registerBroker();
-        mockMvc.perform(delete("/mqtt/" + TestConstants.BROKER_NAME)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void whenSend_shouldBroadcastMessage() throws Exception {
-        doNothing().when(mockMetaMusicRepository).broadCastMessage(any(), anyString(), anyString());
-
-        sendTestMessage()
-                .andExpect(status().isOk());
-
-        verify(mockMetaMusicRepository).broadCastMessage(any(), eq(TestConstants.TEST_TOPIC), eq(TestConstants.TEST_MESSAGE));
-    }
-
-    private ResultActions sendTestMessage() throws Exception {
-        return mockMvc.perform(post("/mqtt/" + TestConstants.BROKER_NAME + "/send/" + TestConstants.TEST_TOPIC)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(TestConstants.TEST_MESSAGE));
-    }
-
-    @Test
-    void whenReceive_givenIncomingMessage_shouldRespondWithExpectedMessage() throws Exception {
-        when(mockMetaMusicRepository.awaitNextMessage(any(), eq(TestConstants.TEST_TOPIC))).thenReturn(TestConstants.TEST_MESSAGE);
-
-        mockMvc.perform(get("/mqtt/" + TestConstants.BROKER_NAME + "/receive/" + TestConstants.TEST_TOPIC)
+        mockMvc.perform(get("/api/v1/artists/byname/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks?max=1&page=1")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(TestConstants.TEST_MESSAGE));
+                .andExpect(content().json(String.format(EXAMPLE_RESPONSE_PAGINATION_SECOND_PAGE_TEMPLATE, EXAMPLE_TRACK_TITLE, EXAMPLE_GENRE, EXAMPLE_DURATION_TEXT,
+                        EXAMPLE_RELEASE_DATE_TEXT)));
     }
 
-     */
+    @Test
+    void whenFetchArtistTracksPaginated_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
+        when(metaMusicService.getArtistTracksPaginated(anyString(), anyInt(), anyInt()))
+                .thenThrow(NoArtistFoundException.class);
+
+        mockMvc.perform(get("/api/v1/artists/byname/nonexistingname/tracks")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 
 
 }
