@@ -36,7 +36,7 @@ public class ApiController {
         this.metaMusicService = metaMusicService;
     }
 
-    @PutMapping(path = "/artists/{name}/tracks", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/artists/byname/{name}/tracks", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedTrackCatalogueLinkDTO> addTrack(
             @PathVariable("name") final String artistName,
             @RequestBody final TrackInformationDTO trackInformationDTO) {
@@ -52,7 +52,7 @@ public class ApiController {
 
         try {
             metaMusicService.addTrack(UrlEncodingUtils.decodeArtistName(artistName), trackInformation);
-            String updatedCatalogueLink = "/api/v1/artists/" + artistName + "/tracks";
+            String updatedCatalogueLink = "/api/v1/artists/byname/" + artistName + "/tracks";
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new UpdatedTrackCatalogueLinkDTO(updatedCatalogueLink));
@@ -63,7 +63,7 @@ public class ApiController {
         }
     }
 
-    @PutMapping(path = "/artists/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/artists/byname/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UpdatedArtistDTO> editArtist(
             @PathVariable("name") final String artistName,
             @RequestBody final ArtistUpdateDTO artistUpdateDTO) {

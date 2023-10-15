@@ -61,14 +61,14 @@ class ApiControllerIT {
         registerResult.andExpect(status().isCreated())
                 .andExpect(content().json(String.format("""
                                 {
-                          "updatedCatalogueLink": "/api/v1/artists/%s/tracks"
+                          "updatedCatalogueLink": "/api/v1/artists/byname/%s/tracks"
                         }""", EXAMPLE_ARTIST_NAME_URL_ENCODED)))
                 .andDo(document("addTrack"));
         verify(metaMusicService).addTrack(eq(EXAMPLE_ARTIST_NAME), any());
     }
 
     private ResultActions addTrack(String requestBody) throws Exception {
-        return mockMvc.perform(put("/api/v1/artists/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks")
+        return mockMvc.perform(put("/api/v1/artists/byname/" + EXAMPLE_ARTIST_NAME_URL_ENCODED + "/tracks")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(requestBody));
@@ -105,7 +105,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenReturn(updatedArtistInformation);
 
-        mockMvc.perform(put("/api/v1/artists/Fleetwood+Mac")
+        mockMvc.perform(put("/api/v1/artists/byname/Fleetwood+Mac")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(String.format("""
@@ -127,7 +127,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(NoArtistFoundException.class);
 
-        mockMvc.perform(put("/api/v1/artists/nonexistingartistname")
+        mockMvc.perform(put("/api/v1/artists/byname/nonexistingartistname")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -142,7 +142,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(IllegalArgumentException.class);
 
-        mockMvc.perform(put("/api/v1/artists/valid")
+        mockMvc.perform(put("/api/v1/artists/byname/valid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -154,7 +154,7 @@ class ApiControllerIT {
 
     @Test
     void whenEditArtistInformation_withNoDataToUpdate_shouldRespondWithBadRequest() throws Exception {
-        mockMvc.perform(put("/api/v1/artists/valid")
+        mockMvc.perform(put("/api/v1/artists/byname/valid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -162,7 +162,7 @@ class ApiControllerIT {
                                  }"""))
                 .andExpect(status().isBadRequest());
 
-        mockMvc.perform(put("/api/v1/artists/same")
+        mockMvc.perform(put("/api/v1/artists/byname/same")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -177,7 +177,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenThrow(ArtistAlreadyExistsException.class);
 
-        mockMvc.perform(put("/api/v1/artists/valid")
+        mockMvc.perform(put("/api/v1/artists/byname/valid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -196,7 +196,7 @@ class ApiControllerIT {
         when(metaMusicService.updateArtistInformation(anyString(), any()))
                 .thenReturn(newArtistInformation);
 
-        mockMvc.perform(put("/api/v1/artists/Fleetwood+Mac")
+        mockMvc.perform(put("/api/v1/artists/byname/Fleetwood+Mac")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(String.format("""

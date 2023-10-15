@@ -9,6 +9,7 @@ import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
 import com.demo.metamusic.core.model.ArtistInformation;
 import com.demo.metamusic.core.model.TrackInformation;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     }
 
     @Override
+    @Transactional
     public ArtistInformation updateArtistInformation(String oldArtistName, ArtistInformation newArtistInformation) {
         verifyNewArtistNameDoesNotExist(newArtistInformation.name());
         ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(oldArtistName);

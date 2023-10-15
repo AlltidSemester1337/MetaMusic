@@ -2,7 +2,7 @@
 ----
 HTTP/1.1 201 Created
 Content-Type: application/json
-Content-Length: 63
+Content-Length: 70
 
-{"updatedCatalogueLink":"/api/v1/artists/Fleetwood+Mac/tracks"}
+{"updatedCatalogueLink":"/api/v1/artists/byname/Fleetwood+Mac/tracks"}
 ----

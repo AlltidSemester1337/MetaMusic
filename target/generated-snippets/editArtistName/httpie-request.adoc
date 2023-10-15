@@ -2,7 +2,7 @@
 ----
 $ echo '{
  "newName":"newArtistName"
- }' | http PUT 'http://localhost:8080/api/v1/artists/Fleetwood+Mac' \
+ }' | http PUT 'http://localhost:8080/api/v1/artists/byname/Fleetwood+Mac' \
     'Content-Type:application/json' \
     'Accept:application/json'
 ----

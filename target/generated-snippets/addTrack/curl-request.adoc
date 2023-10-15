@@ -1,6 +1,6 @@
 [source,bash]
 ----
-$ curl 'http://localhost:8080/api/v1/artists/Fleetwood+Mac/tracks' -i -X PUT \
+$ curl 'http://localhost:8080/api/v1/artists/byname/Fleetwood+Mac/tracks' -i -X PUT \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json' \
     -d '{
