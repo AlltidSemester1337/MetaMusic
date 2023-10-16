@@ -63,7 +63,8 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
         artistToUpdate.setName(newArtist.name());
 
-        Set<String> aliases = new HashSet<>(artistToUpdate.getAliases());
+        Set<String> oldAliases = artistToUpdate.getAliases();
+        Set<String> aliases = oldAliases == null ? new HashSet<>() : new HashSet<>(oldAliases);
         aliases.addAll(newArtist.aliases());
         artistToUpdate.setAliases(aliases);
 
@@ -85,31 +86,40 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     public Page<Track> getArtistTracksPaginated(String artistName, int page, int numTracks) {
         ArtistEntity Artist = getSingleMatchingArtistByName(artistName);
         PageRequest pageRequest = PageRequest.of(page, numTracks);
-        return artistRepository.fetchTracksPaginated(Artist.getId(), pageRequest)
-                .map(Track::fromEntity);
+        Page<TrackEntity> trackEntities = artistRepository.fetchTracksPaginated(Artist.getId(), pageRequest);
+        log.debug("Paginated tracks result: {}", trackEntities);
+        return trackEntities.map(Track::fromEntity);
     }
 
     @Override
     public Optional<Artist> getArtistOfTheDay() {
         if (artistRepository.count() == 0) {
+            log.debug("Artist table empty, returning empty");
             return Optional.empty();
         }
 
         Optional<ArtistEntity> possibleMostRecentArtistOfTheDay = artistRepository.getMostRecentArtistOfTheDay();
         if (possibleMostRecentArtistOfTheDay.isEmpty()) {
+            log.info("Found no most recent artist of the day");
             return Optional.of(Artist.fromEntity(assignNewArtistOfTheDay(1L)));
         }
 
         ArtistEntity mostRecentArtistOfTheDay = possibleMostRecentArtistOfTheDay.get();
         if (isExpired(mostRecentArtistOfTheDay)) {
+            log.info("Most recent artist: {} expired", mostRecentArtistOfTheDay);
             return Optional.of(updateArtistOfTheDay(mostRecentArtistOfTheDay));
         }
+
+        log.debug("Found valid artist of the day: {}", mostRecentArtistOfTheDay);
         return Optional.of(Artist.fromEntity(mostRecentArtistOfTheDay));
     }
 
     private ArtistEntity assignNewArtistOfTheDay(Long mostRecentArtistOfTheDayId) {
         ArtistEntity newArtistOfTheDay = findNewArtistOfTheDay(mostRecentArtistOfTheDayId);
-        newArtistOfTheDay.setDayRotation(new ArtistDayRotationEntity(Date.valueOf(LocalDate.now(DEFAULT_ZONE)), true));
+        ArtistDayRotationEntity dayRotation = new ArtistDayRotationEntity(Date.valueOf(LocalDate.now(DEFAULT_ZONE)), true);
+        dayRotation.setArtist(newArtistOfTheDay);
+        newArtistOfTheDay.setDayRotation(dayRotation);
+        log.info("Assigning new artist of the day: {}", newArtistOfTheDay);
         return artistRepository.save(newArtistOfTheDay);
     }
 
@@ -122,6 +132,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     public Artist updateArtistOfTheDay(ArtistEntity mostRecentArtistOfTheDay) {
         ArtistEntity newArtistOfTheDay = assignNewArtistOfTheDay(mostRecentArtistOfTheDay.getId());
         mostRecentArtistOfTheDay.getDayRotation().setMostRecent(false);
+        log.info("Updating yesterdays artist of the day, set as no longer most recent: {}", mostRecentArtistOfTheDay);
         artistRepository.save(mostRecentArtistOfTheDay);
 
         return Artist.fromEntity(newArtistOfTheDay);
@@ -132,13 +143,18 @@ public class MetaMusicServiceImpl implements MetaMusicService {
         while (0 < current) {
             Optional<ArtistEntity> possibleNextArtistOfTheDay = artistRepository.findById(current);
             if (possibleNextArtistOfTheDay.isPresent()) {
-                return possibleNextArtistOfTheDay.get();
+                ArtistEntity newArtistOfTheDay = possibleNextArtistOfTheDay.get();
+                log.debug("Found new artist of the day: {}", newArtistOfTheDay);
+                return newArtistOfTheDay;
             }
             current--;
         }
         Long maxId = artistRepository.findMaxId()
                 .orElseThrow(() -> new IllegalStateException("Could not fetch max id value in artist table despite table assumed not empty"));
-        return artistRepository.findById(maxId)
+
+        ArtistEntity newArtistOfTheDay = artistRepository.findById(maxId)
                 .orElseThrow(() -> new IllegalArgumentException("Failed to find artist with id: " + maxId));
+        log.debug("Found new artist of the day: {}", newArtistOfTheDay);
+        return newArtistOfTheDay;
     }
 }

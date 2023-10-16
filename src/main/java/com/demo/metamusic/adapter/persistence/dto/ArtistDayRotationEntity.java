@@ -9,7 +9,7 @@ import java.sql.Date;
 @Data
 public class ArtistDayRotationEntity {
 
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
