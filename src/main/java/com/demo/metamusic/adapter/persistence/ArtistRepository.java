@@ -17,7 +17,9 @@ public interface ArtistRepository extends CrudRepository<ArtistEntity, Long> {
     @Query("SELECT track from tracks track WHERE track.artist.id = :artistId")
     Page<TrackEntity> fetchTracksPaginated(Long artistId, Pageable pageable);
 
+    @Query("SELECT a from artists a WHERE a.dayRotation.mostRecent = true")
     Optional<ArtistEntity> getMostRecentArtistOfTheDay();
 
+    @Query("SELECT MAX(artist.id) from artists artist")
     Optional<Long> findMaxId();
 }

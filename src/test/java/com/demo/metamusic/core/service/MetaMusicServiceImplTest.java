@@ -4,6 +4,7 @@ import com.demo.metamusic.TestConstants;
 import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.ArtistRepository;
 import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
+import com.demo.metamusic.adapter.persistence.dto.ArtistDayRotationEntity;
 import com.demo.metamusic.adapter.persistence.dto.ArtistEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackEntity;
 import com.demo.metamusic.core.model.Artist;
@@ -19,6 +20,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +49,7 @@ class MetaMusicServiceImplTest {
         autoCloseable = MockitoAnnotations.openMocks(this);
         long artistId = 3L;
         when(mockedArtistDto.getId()).thenReturn(artistId);
+        when(mockedArtistDto.getName()).thenReturn(EXAMPLE_ARTIST_NAME);
     }
 
     @AfterEach
@@ -205,8 +210,13 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenAlreadyExistingArtistOfTheDay_whenGet_shouldReturnExpectedArtist() {
+        // TODO: 2023-10-16 In order not to fail on tests running across date boundary we should inject mock and return fixed localDates
+        // TODO: 2023-10-16 I had to scope this out due to time constraints
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Paris"));
+        when(artistRepository.count()).thenReturn(1L);
         when(artistRepository.getMostRecentArtistOfTheDay())
                 .thenReturn(Optional.of(mockedArtistDto));
+        when(mockedArtistDto.getDayRotation().getDate().toLocalDate()).thenReturn(today);
 
         Artist expected = new Artist(EXAMPLE_ARTIST_NAME, Set.of());
 
@@ -222,54 +232,78 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenNoExistingMostRecentArtistOfTheDay_whenGet_shouldAssignMaxIdAndReturnArtist() {
+        when(artistRepository.count()).thenReturn(1L);
         when(artistRepository.getMostRecentArtistOfTheDay())
                 .thenReturn(Optional.empty());
         when(artistRepository.findMaxId()).thenReturn(Optional.of(3L));
+        when(artistRepository.findById(eq(3L))).thenReturn(Optional.of(mockedArtistDto));
         when(artistRepository.save(eq(mockedArtistDto)))
                 .thenReturn(mockedArtistDto);
 
         Artist expected = new Artist(EXAMPLE_ARTIST_NAME, Set.of());
 
         assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
-        verify(artistRepository.findMaxId());
-        verify(artistRepository.save(eq(mockedArtistDto)));
+        verify(artistRepository).findMaxId();
+        verify(artistRepository).save(eq(mockedArtistDto));
     }
 
     @Test
     void givenExpiredMostRecentArtistOfTheDay_whenGet_shouldAssignNextLowerIdArtistAndReturn() {
-        when(artistRepository.getMostRecentArtistOfTheDay())
-                .thenReturn(Optional.of(mockedArtistDto));
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Paris"));
+        String newArtistOfTheDayName = "newArtistOfTheDay";
+        ArtistEntity newArtistOfTheDayEntity = new ArtistEntity(newArtistOfTheDayName, Set.of());
+
+        setupYesterdaysArtistOfTheDay(today, 3L);
         when(artistRepository.findById(eq(mockedArtistDto.getId() - 1)))
                 .thenReturn(Optional.empty());
-        String newArtistOfTheDayName = "newArtistOfTheDay";
-        ArtistEntity newArtistOfTheDay = new ArtistEntity(newArtistOfTheDayName, Set.of());
         when(artistRepository.findById(eq(mockedArtistDto.getId() - 2)))
-                .thenReturn(Optional.of(newArtistOfTheDay));
+                .thenReturn(Optional.of(newArtistOfTheDayEntity));
+        when(artistRepository.save(eq(newArtistOfTheDayEntity)))
+                .thenReturn(newArtistOfTheDayEntity);
 
+        Artist artistOfTheDay = metaMusicService.getArtistOfTheDay().get();
+        ArtistDayRotationEntity newArtistDayRotationData = newArtistOfTheDayEntity.getDayRotation();
         Artist expected = new Artist(newArtistOfTheDayName, Set.of());
 
-        assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
-        verify(artistRepository.save(eq(mockedArtistDto)));
-        verify(artistRepository.save(eq(newArtistOfTheDay)));
+        assertEquals(expected, artistOfTheDay);
+        assertEquals(today, newArtistDayRotationData.getDate().toLocalDate());
+        assertTrue(newArtistDayRotationData.isMostRecent());
+        verify(mockedArtistDto.getDayRotation()).setMostRecent(eq(false));
+        verify(artistRepository).save(eq(mockedArtistDto));
+        verify(artistRepository).save(eq(newArtistOfTheDayEntity));
+    }
+
+    private void setupYesterdaysArtistOfTheDay(LocalDate today, long yesterdaysArtistId) {
+        when(artistRepository.count()).thenReturn(2L);
+        when(artistRepository.getMostRecentArtistOfTheDay())
+                .thenReturn(Optional.of(mockedArtistDto));
+        when(mockedArtistDto.getId()).thenReturn(yesterdaysArtistId);
+        when(mockedArtistDto.getDayRotation().getDate())
+                .thenReturn(Date.valueOf(today.minusDays(1L)));
     }
 
     @Test
     void givenExpiredMostRecentArtistOfTheDayWithMinId_whenGet_shouldAssignMaxIdArtistAndReturn() {
-        when(artistRepository.getMostRecentArtistOfTheDay())
-                .thenReturn(Optional.of(mockedArtistDto));
-        when(mockedArtistDto.getId()).thenReturn(1L);
-        when(artistRepository.findMaxId()).thenReturn(Optional.of(5L));
-        when(artistRepository.save(eq(mockedArtistDto)))
-                .thenReturn(mockedArtistDto);
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Paris"));
         String newArtistOfTheDayName = "newArtistOfTheDay";
-        ArtistEntity newArtistOfTheDay = new ArtistEntity(newArtistOfTheDayName, Set.of());
-        when(artistRepository.findById(eq(5L))).thenReturn(Optional.of(newArtistOfTheDay));
+        ArtistEntity newArtistOfTheDayEntity = new ArtistEntity(newArtistOfTheDayName, Set.of());
 
+        setupYesterdaysArtistOfTheDay(today, 1L);
+        when(artistRepository.findMaxId()).thenReturn(Optional.of(5L));
+        when(artistRepository.findById(eq(5L))).thenReturn(Optional.of(newArtistOfTheDayEntity));
+        when(artistRepository.save(eq(newArtistOfTheDayEntity)))
+                .thenReturn(newArtistOfTheDayEntity);
+
+        Artist artistOfTheDay = metaMusicService.getArtistOfTheDay().get();
+        ArtistDayRotationEntity newArtistDayRotationData = newArtistOfTheDayEntity.getDayRotation();
         Artist expected = new Artist(newArtistOfTheDayName, Set.of());
 
-        assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
-        verify(artistRepository.findMaxId());
-        verify(artistRepository.save(eq(mockedArtistDto)));
-        verify(artistRepository.save(eq(newArtistOfTheDay)));
+        assertEquals(expected, artistOfTheDay);
+        assertEquals(today, newArtistDayRotationData.getDate().toLocalDate());
+        assertTrue(newArtistDayRotationData.isMostRecent());
+        verify(artistRepository).findMaxId();
+        verify(mockedArtistDto.getDayRotation()).setMostRecent(eq(false));
+        verify(artistRepository).save(eq(mockedArtistDto));
+        verify(artistRepository).save(eq(newArtistOfTheDayEntity));
     }
 }

@@ -19,19 +19,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
 
     @Autowired
-    private ArtistRepository ArtistRepository;
+    private ArtistRepository artistRepository;
 
     @Test
     void givenMatchingArtistName_shouldReturnExpectedArtists() {
         String artistName = "testName";
-        assertEquals(List.of(), ArtistRepository.findByName(artistName));
+        assertEquals(List.of(), artistRepository.findByName(artistName));
         ArtistEntity expectedArtist = new ArtistEntity(artistName, Set.of());
 
-        ArtistRepository.save(expectedArtist);
-        assertEquals(List.of(expectedArtist), ArtistRepository.findByName(artistName));
+        artistRepository.save(expectedArtist);
+        assertEquals(List.of(expectedArtist), artistRepository.findByName(artistName));
 
-        ArtistRepository.save(new ArtistEntity(artistName, Set.of()));
-        assertEquals(2, ArtistRepository.findByName(artistName).size());
+        artistRepository.save(new ArtistEntity(artistName, Set.of()));
+        assertEquals(2, artistRepository.findByName(artistName).size());
     }
 
     @Test
@@ -41,8 +41,8 @@ class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
         expectedTrack.setArtist(expectedArtist);
         expectedArtist.getTracks().add(expectedTrack);
 
-        ArtistEntity saved = ArtistRepository.save(expectedArtist);
-        List<TrackEntity> savedTracks = ArtistRepository.findById(saved.getId()).get().getTracks();
+        ArtistEntity saved = artistRepository.save(expectedArtist);
+        List<TrackEntity> savedTracks = artistRepository.findById(saved.getId()).get().getTracks();
         assertEquals(1, savedTracks.size());
         assertEquals(expectedTrack, savedTracks.get(0));
     }
@@ -51,17 +51,17 @@ class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
     void givenValidArtistUpdateInformation_shouldPersistChangesOnSave() {
         String oldName = "oldName";
         ArtistEntity oldArtist = new ArtistEntity(oldName, Set.of());
-        ArtistEntity oldArtistEntity = ArtistRepository.save(oldArtist);
+        ArtistEntity oldArtistEntity = artistRepository.save(oldArtist);
         Set<String> newAliases = Set.of("newAlias");
 
-        assertEquals(oldArtistEntity, ArtistRepository.findByName(oldName).get(0));
+        assertEquals(oldArtistEntity, artistRepository.findByName(oldName).get(0));
 
         oldArtist.setName("newName");
         oldArtist.setAliases(newAliases);
-        ArtistRepository.save(oldArtist);
+        artistRepository.save(oldArtist);
 
-        assertTrue(ArtistRepository.findByName(oldName).isEmpty());
-        ArtistEntity updatedArtistEntity = ArtistRepository.findById(oldArtistEntity.getId()).get();
+        assertTrue(artistRepository.findByName(oldName).isEmpty());
+        ArtistEntity updatedArtistEntity = artistRepository.findById(oldArtistEntity.getId()).get();
         assertEquals(oldArtistEntity, updatedArtistEntity);
         assertEquals(newAliases, updatedArtistEntity.getAliases());
     }
@@ -72,7 +72,7 @@ class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
         ArtistEntity artist = new ArtistEntity(artistName, Set.of());
         List<TrackEntity> expectedArtistTracks = setupArtistTracks(artist);
 
-        Page<TrackEntity> TrackEntities = ArtistRepository.fetchTracksPaginated(artist.getId(), PageRequest.of(0, 10));
+        Page<TrackEntity> TrackEntities = artistRepository.fetchTracksPaginated(artist.getId(), PageRequest.of(0, 10));
         assertEquals(expectedArtistTracks, TrackEntities.getContent());
     }
 
@@ -84,7 +84,7 @@ class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
 
         expectedArtistTracks.forEach(track -> track.setArtist(artist));
         artist.setTracks(expectedArtistTracks);
-        ArtistRepository.save(artist);
+        artistRepository.save(artist);
         return expectedArtistTracks;
     }
 
@@ -94,11 +94,16 @@ class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
         ArtistEntity artist = new ArtistEntity(artistName, Set.of());
         List<TrackEntity> expectedArtistTracks = setupArtistTracks(artist);
 
-        Page<TrackEntity> firstTrackPage = ArtistRepository.fetchTracksPaginated(artist.getId(), PageRequest.of(0, 1));
-        Page<TrackEntity> secondTrackPage = ArtistRepository.fetchTracksPaginated(artist.getId(), PageRequest.of(1, 1));
+        Page<TrackEntity> firstTrackPage = artistRepository.fetchTracksPaginated(artist.getId(), PageRequest.of(0, 1));
+        Page<TrackEntity> secondTrackPage = artistRepository.fetchTracksPaginated(artist.getId(), PageRequest.of(1, 1));
         assertEquals(List.of(expectedArtistTracks.get(0)), firstTrackPage.getContent());
         assertEquals(0, firstTrackPage.getPageable().getPageNumber());
         assertEquals(List.of(expectedArtistTracks.get(1)), secondTrackPage.getContent());
         assertEquals(1, secondTrackPage.getPageable().getPageNumber());
+    }
+
+    @Test
+    void givenNoMostRecentArtistOfTheDay_shouldReturnEmptyOptional() {
+        assertTrue(artistRepository.getMostRecentArtistOfTheDay().isEmpty());
     }
 }

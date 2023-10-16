@@ -129,7 +129,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
     private ArtistEntity findNewArtistOfTheDay(Long mostRecentId) {
         Long current = mostRecentId - 1;
-        while (1 < current) {
+        while (0 < current) {
             Optional<ArtistEntity> possibleNextArtistOfTheDay = artistRepository.findById(current);
             if (possibleNextArtistOfTheDay.isPresent()) {
                 return possibleNextArtistOfTheDay.get();

@@ -1,16 +1,17 @@
 package com.demo.metamusic.adapter.persistence.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Date;
 
-@Entity(name = "artistofthedayrotation")
+@Entity(name = "artist_of_the_day_rotation")
 @Data
 public class ArtistDayRotationEntity {
+
+    @GeneratedValue
+    @Id
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "artist_id")
@@ -21,6 +22,9 @@ public class ArtistDayRotationEntity {
     @Column(name = "most_recent")
     private boolean mostRecent;
 
+    public ArtistDayRotationEntity() {
+    }
+
     public ArtistDayRotationEntity(Date date, boolean mostRecent) {
         this.date = date;
         this.mostRecent = mostRecent;
@@ -29,7 +33,8 @@ public class ArtistDayRotationEntity {
     @Override
     public String toString() {
         return "ArtistDayRotationEntity{" +
-                "artist=" + artist.getId() +
+                "id=" + id +
+                ", artist=" + artist.getId() +
                 ", date=" + date +
                 ", mostRecent=" + mostRecent +
                 '}';
