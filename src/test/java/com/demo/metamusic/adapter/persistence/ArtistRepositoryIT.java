@@ -131,7 +131,9 @@ class ArtistRepositoryIT {
         assertTrue(artistRepository.getMostRecentArtistOfTheDay().isEmpty());
 
         ArtistEntity artist = new ArtistEntity("valid", Set.of());
-        artist.setDayRotation(new ArtistDayRotationEntity(Date.valueOf(LocalDate.EPOCH), false));
+        ArtistDayRotationEntity dayRotation = new ArtistDayRotationEntity(Date.valueOf(LocalDate.EPOCH), false);
+        dayRotation.setArtist(artist);
+        artist.setDayRotation(dayRotation);
         artistRepository.save(artist);
 
         assertTrue(artistRepository.getMostRecentArtistOfTheDay().isEmpty());
@@ -140,7 +142,9 @@ class ArtistRepositoryIT {
     @Test
     void givenMostRecentArtistOfTheDay_shouldReturnExpectedArtist() {
         ArtistEntity artist = new ArtistEntity("valid", Set.of());
-        artist.setDayRotation(new ArtistDayRotationEntity(Date.valueOf(LocalDate.EPOCH), true));
+        ArtistDayRotationEntity dayRotation = new ArtistDayRotationEntity(Date.valueOf(LocalDate.EPOCH), true);
+        dayRotation.setArtist(artist);
+        artist.setDayRotation(dayRotation);
         artistRepository.save(artist);
 
         assertEquals(artist, artistRepository.getMostRecentArtistOfTheDay().get());

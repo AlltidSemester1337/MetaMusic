@@ -18,7 +18,7 @@ Example request, response and curl can be found in
 
 Example request, response and curl can be found in
 
-    /target/generated-snippets/editArtist
+    /target/generated-snippets/editArtistName
 
 ##     * Fetch all tracks paginated for artist by name
 
@@ -38,11 +38,15 @@ Example request, response and curl can be found in
 
     /target/generated-snippets/artistOfTheDay
 
-All snippets genereted upon building project and executing integration tests
+All snippets generated upon building project and executing integration tests
 
 Also enabled for the following actuator endpoints:
 
     /actuator/httpexchanges
+
+# System design / architecture
+
+![MetaMusic Design](MetaMusic.drawio.png?raw=true)
 
 # Local run prerequisites
 
@@ -63,6 +67,7 @@ SPRING_DATASOURCE_PASSWORD
 
 # Run using Docker
 
+    mvn clean install
     docker build .
     docker run -e SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL} \
     -e SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME} \

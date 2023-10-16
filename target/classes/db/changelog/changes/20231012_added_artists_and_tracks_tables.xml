@@ -1,0 +1,39 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="20231012-1" author="Swarlos">
+        <createTable tableName="artists">
+            <column name="id" type="bigserial" autoIncrement="${autoIncrement}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(70)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aliases" type="varchar(70) []">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <createTable tableName="tracks">
+            <column name="id" type="bigserial" autoIncrement="${autoIncrement}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="artist_id" type="bigint">
+                <constraints foreignKeyName="fk_albums_artists" referencedTableName="artists" referencedColumnNames="id" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(70)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="genre" type="varchar(70)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="release_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
