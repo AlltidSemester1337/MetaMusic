@@ -28,9 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.demo.metamusic.TestConstants.*;
-import static com.demo.metamusic.TestConstants.EXAMPLE_TRACK_RELEASE_DATE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 

@@ -27,6 +27,15 @@ import java.util.Optional;
         produces = MediaType.APPLICATION_JSON_VALUE
 )
 @Slf4j
+// TODO: 10/16/23 All endpoints are currently implemented synchronously (performing persistence operations and waiting for return)
+// If we start to notice performance strain in monitoring / metrics (for example liquibase "slow queries" data) we could consider adding
+// similar endpoints but queueing the persistence tasks and returning responses such as "the track will be added shortly" etc
+// however I choose not to go for this approach right away since it removes a lot of the user value and friendliness of calling the API endpoints
+// (assuming we would gradually scale up incoming HTTP requests in a sensible way while monitoring performance)
+// TODO: 10/16/23 Also most operations use the name attribute of artists which is not great considering it's not a unique piece of data
+// In a more realistic scenario it would be very beneficial to add similar operations but instead based on id attribute, however
+// for the purpose of this task and to provide some convenience and user friendliness calling the API (especially to add tracks)
+// as well as the common use case of the artist name actually being unique I think as a first release / version having name based operations is a fair approach
 public class ApiController {
 
     private final MetaMusicService metaMusicService;

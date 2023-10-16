@@ -8,7 +8,7 @@
 
     <logger name="com.demo.metamusic" level="DEBUG" />
 
-    <!-- TODO: Should be removed or explicitly disabled in prod as the application scales but may be convinient in early release -->
+    <!-- TODO: Should be removed or explicitly disabled in prod as the application scales but may be convenient in early release -->
     <logger name="org.hibernate.SQL" level="DEBUG" />
     <logger name="org.hibernate.orm.jdbc.bind" level="TRACE" />
 

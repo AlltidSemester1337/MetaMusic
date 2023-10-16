@@ -1,13 +1,20 @@
 package com.demo.metamusic.adapter.persistence;
 
 import com.demo.metamusic.TestConstants;
+import com.demo.metamusic.adapter.persistence.dto.ArtistDayRotationEntity;
 import com.demo.metamusic.adapter.persistence.dto.ArtistEntity;
 import com.demo.metamusic.adapter.persistence.dto.TrackEntity;
+import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -16,7 +23,24 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
+@Testcontainers
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
+class ArtistRepositoryIT {
+
+    @Container
+    static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:16.0")
+            .withDatabaseName("testdb")
+            .withUsername("testuser")
+            .withPassword("testpassword");
+
+    static {
+        postgresContainer.start();
+        System.setProperty("spring.datasource.url", postgresContainer.getJdbcUrl());
+        System.setProperty("spring.datasource.username", postgresContainer.getUsername());
+        System.setProperty("spring.datasource.password", postgresContainer.getPassword());
+    }
 
     @Autowired
     private ArtistRepository artistRepository;
@@ -105,5 +129,36 @@ class ArtistRepositoryIT extends PersistenceIntegrationTestParent {
     @Test
     void givenNoMostRecentArtistOfTheDay_shouldReturnEmptyOptional() {
         assertTrue(artistRepository.getMostRecentArtistOfTheDay().isEmpty());
+
+        ArtistEntity artist = new ArtistEntity("valid", Set.of());
+        artist.setDayRotation(new ArtistDayRotationEntity(Date.valueOf(LocalDate.EPOCH), false));
+        artistRepository.save(artist);
+
+        assertTrue(artistRepository.getMostRecentArtistOfTheDay().isEmpty());
+    }
+
+    @Test
+    void givenMostRecentArtistOfTheDay_shouldReturnExpectedArtist() {
+        ArtistEntity artist = new ArtistEntity("valid", Set.of());
+        artist.setDayRotation(new ArtistDayRotationEntity(Date.valueOf(LocalDate.EPOCH), true));
+        artistRepository.save(artist);
+
+        assertEquals(artist, artistRepository.getMostRecentArtistOfTheDay().get());
+    }
+
+    @Test
+    void givenNoArtists_whenGetMaxId_shouldReturnEmptyOptional() {
+        assertTrue(artistRepository.findMaxId().isEmpty());
+    }
+
+    @Test
+    void givenMultipleArtists_whenGetMaxId_shouldReturnHighestId() {
+        ArtistEntity artist = new ArtistEntity("valid", Set.of());
+        Long firstId = artistRepository.save(artist).getId();
+
+        ArtistEntity anotherArtist = new ArtistEntity("anotherValid", Set.of());
+        Long secondId = artistRepository.save(artist).getId();
+
+        assertEquals(Math.max(firstId, secondId), artistRepository.findMaxId().get());
     }
 }

@@ -28,6 +28,16 @@ Example request, response and curl can be found in
 
     /target/generated-snippets/fetchTracks
 
+##     * Fetch artist of the day
+
+**GET /api/v1/artists/artistOfTheDay**
+
+Rotates on artists in a cyclical daily updated manner, starting and re-starting from last artist until first artist (lowest ID)
+
+Example request, response and curl can be found in
+
+    /target/generated-snippets/artistOfTheDay
+
 All snippets genereted upon building project and executing integration tests
 
 Also enabled for the following actuator endpoints:

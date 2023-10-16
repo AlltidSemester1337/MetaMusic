@@ -4,8 +4,6 @@ import com.demo.metamusic.core.model.Artist;
 import com.demo.metamusic.core.model.Track;
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 public interface MetaMusicService {
@@ -17,5 +15,8 @@ public interface MetaMusicService {
 
     Page<Track> getArtistTracksPaginated(String artistName, int page, int numTracks);
 
+    // TODO: 10/16/23 To ensure true fairness we could add a scheduled background async task to make sure this is invoked also on a day
+    // where there is no incoming request to the service, however I scoped this out due to time constraint and very little benefit
+    // as a first version / release I think it's sufficient to rely on incoming get to trigger update
     Optional<Artist> getArtistOfTheDay();
 }

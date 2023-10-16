@@ -26,7 +26,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
     public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Paris");
     @Autowired
-    private ArtistRepository artistRepository;
+    private final ArtistRepository artistRepository;
 
     public MetaMusicServiceImpl(ArtistRepository ArtistRepository) {
         this.artistRepository = ArtistRepository;
@@ -128,7 +128,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     }
 
     private ArtistEntity findNewArtistOfTheDay(Long mostRecentId) {
-        Long current = mostRecentId - 1;
+        long current = mostRecentId - 1;
         while (0 < current) {
             Optional<ArtistEntity> possibleNextArtistOfTheDay = artistRepository.findById(current);
             if (possibleNextArtistOfTheDay.isPresent()) {
