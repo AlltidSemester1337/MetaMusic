@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.demo.metamusic.TestConstants.*;
@@ -242,5 +243,31 @@ class ApiControllerIT {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void whenGetArtistOfTheDay_withArtistAlreadyResolved_shouldRespondWithWithOkAndExpectedContent() throws Exception {
+        Optional<Artist> artistOfTheDay = Optional.of(new Artist(EXAMPLE_ARTIST_NAME, Set.of()));
+        when(metaMusicService.getArtistOfTheDay())
+                .thenReturn(artistOfTheDay);
+
+        mockMvc.perform(get("/api/v1/artists/artistOfTheDay")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(String.format("""
+                        {
+                            "name": "%s",
+                            "aliases": []
+                        }""", EXAMPLE_ARTIST_NAME)))
+                .andDo(document("artistOfTheDay"));
+    }
+
+    @Test
+    void whenGetArtistOfTheDay_withNoArtists_shouldRespondWithNoContent() throws Exception {
+        when(metaMusicService.getArtistOfTheDay())
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/v1/artists/artistOfTheDay")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
 
 }

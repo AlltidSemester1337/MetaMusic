@@ -1,7 +1,7 @@
 package com.demo.metamusic.core.model;
 
 import com.demo.metamusic.adapter.http.dto.request.ArtistUpdateDTO;
-import com.demo.metamusic.adapter.http.dto.response.UpdatedArtistDTO;
+import com.demo.metamusic.adapter.http.dto.response.ArtistDTO;
 import com.demo.metamusic.adapter.persistence.dto.ArtistEntity;
 import io.micrometer.common.util.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -25,8 +25,8 @@ public record Artist(String name, Set<String> aliases) {
         return new Artist(newName, newAliases);
     }
 
-    public static UpdatedArtistDTO toDTO(Artist Artist) {
-        return new UpdatedArtistDTO(Artist.name(), Artist.aliases());
+    public static ArtistDTO toDTO(Artist Artist) {
+        return new ArtistDTO(Artist.name(), Artist.aliases());
     }
 
     public static Artist fromEntity(ArtistEntity updatedEntity) {

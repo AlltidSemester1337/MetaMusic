@@ -19,15 +19,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.time.Duration;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.demo.metamusic.TestConstants.*;
 import static com.demo.metamusic.TestConstants.EXAMPLE_TRACK_RELEASE_DATE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -35,7 +33,7 @@ import static org.mockito.Mockito.*;
 class MetaMusicServiceImplTest {
 
     @Mock
-    private ArtistRepository ArtistRepository;
+    private ArtistRepository artistRepository;
     @InjectMocks
     private MetaMusicServiceImpl metaMusicService;
     private AutoCloseable autoCloseable;
@@ -45,7 +43,7 @@ class MetaMusicServiceImplTest {
     @BeforeEach
     void setUp() {
         autoCloseable = MockitoAnnotations.openMocks(this);
-        long artistId = 1L;
+        long artistId = 3L;
         when(mockedArtistDto.getId()).thenReturn(artistId);
     }
 
@@ -56,14 +54,14 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenValidTrack_makesNecessaryCallsToPersistArtistData() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
 
         metaMusicService.addTrack(TestConstants.EXAMPLE_ARTIST_NAME, EXAMPLE_TRACK);
 
         TrackEntity expected = Track.toEntity(EXAMPLE_TRACK);
         expected.setArtist(mockedArtistDto);
         verify(mockedArtistDto.getTracks()).add(eq(expected));
-        verify(ArtistRepository).save(eq(mockedArtistDto));
+        verify(artistRepository).save(eq(mockedArtistDto));
     }
 
     // TODO: 10/12/23 With the current requirements this makes sense (One track can only have one artist),
@@ -72,7 +70,7 @@ class MetaMusicServiceImplTest {
     //  or if it should be considered shared ownership but regardless it may be good to have the track show up as result for all contributing artists.
     @Test
     void givenMultipleMatchingArtistsForTrack_throwsException() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
 
         assertThrows(IllegalArgumentException.class, () -> metaMusicService.addTrack(TestConstants.EXAMPLE_ARTIST_NAME, EXAMPLE_TRACK));
@@ -80,7 +78,7 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenNoMatchingArtistsForTrack_throwsException() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
 
         assertThrows(NoArtistFoundException.class, () -> metaMusicService.addTrack(TestConstants.EXAMPLE_ARTIST_NAME, EXAMPLE_TRACK));
     }
@@ -90,16 +88,16 @@ class MetaMusicServiceImplTest {
         ArtistEntity oldArtist = new ArtistEntity(TestConstants.EXAMPLE_ARTIST_NAME, Set.of());
         ArtistEntity updatedArtistEntity = new ArtistEntity("newName", Set.of());
 
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(oldArtist));
-        when(ArtistRepository.save(eq(updatedArtistEntity))).thenReturn(updatedArtistEntity);
+        when(artistRepository.save(eq(updatedArtistEntity))).thenReturn(updatedArtistEntity);
 
         Artist newArtist = Artist.fromEntity(updatedArtistEntity);
         Artist updatedArtist = metaMusicService.updateArtist(TestConstants.EXAMPLE_ARTIST_NAME,
                 newArtist);
 
         assertEquals(newArtist, updatedArtist);
-        verify(ArtistRepository).save(eq(updatedArtistEntity));
+        verify(artistRepository).save(eq(updatedArtistEntity));
     }
 
     @Test
@@ -108,21 +106,21 @@ class MetaMusicServiceImplTest {
         ArtistEntity oldArtist = new ArtistEntity(testName, Set.of("oldAlias"));
         ArtistEntity updatedArtistEntity = new ArtistEntity(testName, Set.of("oldAlias", "newAlias"));
 
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(oldArtist));
-        when(ArtistRepository.save(eq(updatedArtistEntity))).thenReturn(updatedArtistEntity);
+        when(artistRepository.save(eq(updatedArtistEntity))).thenReturn(updatedArtistEntity);
 
         Artist newArtist = new Artist(testName, Set.of("newAlias"));
         Artist updatedArtist = metaMusicService.updateArtist(TestConstants.EXAMPLE_ARTIST_NAME,
                 newArtist);
 
         assertEquals(Artist.fromEntity(updatedArtistEntity), updatedArtist);
-        verify(ArtistRepository).save(eq(updatedArtistEntity));
+        verify(artistRepository).save(eq(updatedArtistEntity));
     }
 
     @Test
     void givenNonExistingArtist_whenCallingUpdateArtist_throwsException() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
 
         assertThrows(NoArtistFoundException.class,
                 () -> metaMusicService.updateArtist(TestConstants.EXAMPLE_ARTIST_NAME, new Artist("valid", Set.of())));
@@ -130,7 +128,7 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenMultipleMatchingArtists_whenCallingUpdateArtist_shouldThrowException() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
 
         assertThrows(IllegalArgumentException.class,
@@ -140,8 +138,8 @@ class MetaMusicServiceImplTest {
     @Test
     void givenAlreadyExistingArtistWithNewName_whenCallingUpdateArtist_shouldThrowException() {
         String newName = "newName";
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
-        when(ArtistRepository.findByName(eq(newName))).thenReturn(List.of(mockedArtistDto));
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
+        when(artistRepository.findByName(eq(newName))).thenReturn(List.of(mockedArtistDto));
 
         Artist newArtist = new Artist(newName, Set.of());
         assertThrows(ArtistAlreadyExistsException.class,
@@ -154,15 +152,15 @@ class MetaMusicServiceImplTest {
         Track secondTrack = new Track(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
         Page<Track> expected = new PageImpl<>(List.of(EXAMPLE_TRACK, secondTrack));
 
-        when(ArtistRepository.findByName(eq(EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
-        when(ArtistRepository.fetchTracksPaginated(eq(1L), eq(pageRequest)))
+        when(artistRepository.findByName(eq(EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
+        when(artistRepository.fetchTracksPaginated(eq(3L), eq(pageRequest)))
                 .thenReturn(expected.map(Track::toEntity));
 
         Page<Track> tracks = metaMusicService.getArtistTracksPaginated(TestConstants.EXAMPLE_ARTIST_NAME,
                 0, 2);
 
         assertEquals(expected, tracks);
-        verify(ArtistRepository).fetchTracksPaginated(eq(1L), eq(pageRequest));
+        verify(artistRepository).fetchTracksPaginated(eq(3L), eq(pageRequest));
     }
 
     @Test
@@ -171,8 +169,8 @@ class MetaMusicServiceImplTest {
         Page<Track> expectedFirstPage = new PageImpl<>(List.of(EXAMPLE_TRACK));
         Page<Track> expectedSecondPage = new PageImpl<>(List.of(secondTrack));
 
-        when(ArtistRepository.findByName(eq(EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
-        when(ArtistRepository.fetchTracksPaginated(eq(1L), any()))
+        when(artistRepository.findByName(eq(EXAMPLE_ARTIST_NAME))).thenReturn(List.of(mockedArtistDto));
+        when(artistRepository.fetchTracksPaginated(eq(3L), any()))
                 .thenReturn(expectedFirstPage.map(Track::toEntity), expectedSecondPage.map(Track::toEntity));
 
         Page<Track> firstTracksPage = metaMusicService.getArtistTracksPaginated(TestConstants.EXAMPLE_ARTIST_NAME,
@@ -184,13 +182,13 @@ class MetaMusicServiceImplTest {
         PageRequest expectedSecondPageRequest = PageRequest.of(1, 1);
         assertEquals(expectedFirstPage, firstTracksPage);
         assertEquals(expectedSecondPage, secondTracksPage);
-        verify(ArtistRepository).fetchTracksPaginated(eq(1L), eq(expectedFirstPageRequest));
-        verify(ArtistRepository).fetchTracksPaginated(eq(1L), eq(expectedSecondPageRequest));
+        verify(artistRepository).fetchTracksPaginated(eq(3L), eq(expectedFirstPageRequest));
+        verify(artistRepository).fetchTracksPaginated(eq(3L), eq(expectedSecondPageRequest));
     }
 
     @Test
     void whenFetchArtistTracksPaginated_withNonExistingArtistName_throwsException() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME))).thenReturn(List.of());
 
         assertThrows(NoArtistFoundException.class, () -> metaMusicService.getArtistTracksPaginated(TestConstants.EXAMPLE_ARTIST_NAME,
                 0, 1));
@@ -198,10 +196,80 @@ class MetaMusicServiceImplTest {
 
     @Test
     void givenMultipleMatchingArtists_whenFetchArtistTracksPaginated_shouldThrowException() {
-        when(ArtistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
+        when(artistRepository.findByName(eq(TestConstants.EXAMPLE_ARTIST_NAME)))
                 .thenReturn(List.of(mockedArtistDto, mockedArtistDto));
 
         assertThrows(IllegalArgumentException.class,
                 () -> metaMusicService.getArtistTracksPaginated(TestConstants.EXAMPLE_ARTIST_NAME, 0, 1));
+    }
+
+    @Test
+    void givenAlreadyExistingArtistOfTheDay_whenGet_shouldReturnExpectedArtist() {
+        when(artistRepository.getMostRecentArtistOfTheDay())
+                .thenReturn(Optional.of(mockedArtistDto));
+
+        Artist expected = new Artist(EXAMPLE_ARTIST_NAME, Set.of());
+
+        assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
+    }
+
+    @Test
+    void givenNoArtists_whenGetArtistOfTheDay_shouldReturnEmptyOptional() {
+        when(artistRepository.count()).thenReturn(0L);
+
+        assertTrue(metaMusicService.getArtistOfTheDay().isEmpty());
+    }
+
+    @Test
+    void givenNoExistingMostRecentArtistOfTheDay_whenGet_shouldAssignMaxIdAndReturnArtist() {
+        when(artistRepository.getMostRecentArtistOfTheDay())
+                .thenReturn(Optional.empty());
+        when(artistRepository.findMaxId()).thenReturn(Optional.of(3L));
+        when(artistRepository.save(eq(mockedArtistDto)))
+                .thenReturn(mockedArtistDto);
+
+        Artist expected = new Artist(EXAMPLE_ARTIST_NAME, Set.of());
+
+        assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
+        verify(artistRepository.findMaxId());
+        verify(artistRepository.save(eq(mockedArtistDto)));
+    }
+
+    @Test
+    void givenExpiredMostRecentArtistOfTheDay_whenGet_shouldAssignNextLowerIdArtistAndReturn() {
+        when(artistRepository.getMostRecentArtistOfTheDay())
+                .thenReturn(Optional.of(mockedArtistDto));
+        when(artistRepository.findById(eq(mockedArtistDto.getId() - 1)))
+                .thenReturn(Optional.empty());
+        String newArtistOfTheDayName = "newArtistOfTheDay";
+        ArtistEntity newArtistOfTheDay = new ArtistEntity(newArtistOfTheDayName, Set.of());
+        when(artistRepository.findById(eq(mockedArtistDto.getId() - 2)))
+                .thenReturn(Optional.of(newArtistOfTheDay));
+
+        Artist expected = new Artist(newArtistOfTheDayName, Set.of());
+
+        assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
+        verify(artistRepository.save(eq(mockedArtistDto)));
+        verify(artistRepository.save(eq(newArtistOfTheDay)));
+    }
+
+    @Test
+    void givenExpiredMostRecentArtistOfTheDayWithMinId_whenGet_shouldAssignMaxIdArtistAndReturn() {
+        when(artistRepository.getMostRecentArtistOfTheDay())
+                .thenReturn(Optional.of(mockedArtistDto));
+        when(mockedArtistDto.getId()).thenReturn(1L);
+        when(artistRepository.findMaxId()).thenReturn(Optional.of(5L));
+        when(artistRepository.save(eq(mockedArtistDto)))
+                .thenReturn(mockedArtistDto);
+        String newArtistOfTheDayName = "newArtistOfTheDay";
+        ArtistEntity newArtistOfTheDay = new ArtistEntity(newArtistOfTheDayName, Set.of());
+        when(artistRepository.findById(eq(5L))).thenReturn(Optional.of(newArtistOfTheDay));
+
+        Artist expected = new Artist(newArtistOfTheDayName, Set.of());
+
+        assertEquals(expected, metaMusicService.getArtistOfTheDay().get());
+        verify(artistRepository.findMaxId());
+        verify(artistRepository.save(eq(mockedArtistDto)));
+        verify(artistRepository.save(eq(newArtistOfTheDay)));
     }
 }

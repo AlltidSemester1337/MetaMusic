@@ -22,6 +22,9 @@ public class ArtistEntity {
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
     private List<TrackEntity> tracks = new ArrayList<>();
 
+    @OneToOne(mappedBy = "artist", cascade = CascadeType.ALL)
+    private ArtistDayRotationEntity dayRotation;
+
     public ArtistEntity() {
         tracks = new ArrayList<>();
     }
@@ -29,5 +32,8 @@ public class ArtistEntity {
     public ArtistEntity(String name, Set<String> aliases) {
         this.name = name;
         this.aliases = aliases;
+    }
+    public ArtistDayRotationEntity getDayRotation() {
+        return dayRotation;
     }
 }

@@ -2,7 +2,7 @@ package com.demo.metamusic.adapter.http;
 
 import com.demo.metamusic.adapter.http.dto.request.ArtistUpdateDTO;
 import com.demo.metamusic.adapter.http.dto.request.TrackDTO;
-import com.demo.metamusic.adapter.http.dto.response.UpdatedArtistDTO;
+import com.demo.metamusic.adapter.http.dto.response.ArtistDTO;
 import com.demo.metamusic.adapter.http.dto.response.UpdatedTrackCatalogueLinkDTO;
 import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(
@@ -40,9 +41,9 @@ public class ApiController {
             @PathVariable("name") final String artistName,
             @RequestBody final TrackDTO TrackDTO) {
 
-        Track Track;
+        Track track;
         try {
-            Track = Track.fromDTO(TrackDTO);
+            track = Track.fromDTO(TrackDTO);
         } catch (DateTimeParseException | IllegalArgumentException e) {
             log.info("Caught exception on parsing TrackDTO", e);
             // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is invalid (scoped out due to time constraints)
@@ -50,7 +51,7 @@ public class ApiController {
         }
 
         try {
-            metaMusicService.addTrack(UrlEncodingUtils.decodeArtistName(artistName), Track);
+            metaMusicService.addTrack(UrlEncodingUtils.decodeArtistName(artistName), track);
             String updatedCatalogueLink = "/api/v1/artists/byname/" + artistName + "/tracks";
 
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -63,7 +64,7 @@ public class ApiController {
     }
 
     @PutMapping(path = "/artists/byname/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UpdatedArtistDTO> editArtist(
+    public ResponseEntity<ArtistDTO> editArtist(
             @PathVariable("name") final String artistName,
             @RequestBody final ArtistUpdateDTO artistUpdateDTO) {
         String oldArtistNameNormalized = UrlEncodingUtils.decodeArtistName(artistName);
@@ -117,5 +118,12 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(artistTracks.map(Track::toDTO));
+    }
+
+    @GetMapping(path = "/artists/artistOfTheDay")
+    public ResponseEntity<ArtistDTO> artistOfTheDay() {
+        Optional<Artist> artistOfTheDay = metaMusicService.getArtistOfTheDay();
+        return artistOfTheDay.map(artist -> ResponseEntity.status(HttpStatus.OK).body(Artist.toDTO(artist)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 }

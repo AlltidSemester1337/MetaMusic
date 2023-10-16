@@ -9,10 +9,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ArtistRepository extends CrudRepository<ArtistEntity, Long> {
     List<ArtistEntity> findByName(String artistName);
 
     @Query("SELECT track from tracks track WHERE track.artist.id = :artistId")
     Page<TrackEntity> fetchTracksPaginated(Long artistId, Pageable pageable);
+
+    Optional<ArtistEntity> getMostRecentArtistOfTheDay();
+
+    Optional<Long> findMaxId();
 }
