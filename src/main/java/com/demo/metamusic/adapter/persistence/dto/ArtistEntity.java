@@ -2,7 +2,6 @@ package com.demo.metamusic.adapter.persistence.dto;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.Set;
 
 @Entity(name="artists")
 @Data
-public class ArtistInformationEntity {
+public class ArtistEntity {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -21,13 +20,13 @@ public class ArtistInformationEntity {
     private Set<String> aliases;
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
-    private List<TrackInformationEntity> tracks = new ArrayList<>();
+    private List<TrackEntity> tracks = new ArrayList<>();
 
-    public ArtistInformationEntity() {
+    public ArtistEntity() {
         tracks = new ArrayList<>();
     }
 
-    public ArtistInformationEntity(String name, Set<String> aliases) {
+    public ArtistEntity(String name, Set<String> aliases) {
         this.name = name;
         this.aliases = aliases;
     }

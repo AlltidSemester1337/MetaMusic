@@ -2,8 +2,8 @@ package com.demo.metamusic.adapter.http;
 
 import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
 import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
-import com.demo.metamusic.core.model.ArtistInformation;
-import com.demo.metamusic.core.model.TrackInformation;
+import com.demo.metamusic.core.model.Artist;
+import com.demo.metamusic.core.model.Track;
 import com.demo.metamusic.core.service.MetaMusicService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,13 +103,13 @@ class ApiControllerIT {
 
     // TODO: 10/11/23 Scoped out / left other types of error handling due to time constraints (For example we may want to treat DB connectivity issues and present a user friendly message etc)
     @Test
-    void whenEditArtistInformation_withValidName_shouldRespondWithOkAndUpdatedData() throws Exception {
+    void whenEditArtist_withValidName_shouldRespondWithOkAndUpdatedData() throws Exception {
         String newName = "newArtistName";
-        ArtistInformation updatedArtistInformation = new ArtistInformation(newName, Set.of());
-        when(metaMusicService.updateArtistInformation(anyString(), any()))
-                .thenReturn(updatedArtistInformation);
+        Artist updatedArtist = new Artist(newName, Set.of());
+        when(metaMusicService.updateArtist(anyString(), any()))
+                .thenReturn(updatedArtist);
 
-        sendUpdateArtistInformationRequest(newName)
+        sendUpdateArtistRequest(newName)
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("""
                         {
@@ -117,10 +117,10 @@ class ApiControllerIT {
                             "aliases": []
                         }""", newName)))
                 .andDo(document("editArtistName"));
-        verify(metaMusicService).updateArtistInformation(eq(EXAMPLE_ARTIST_NAME), eq(updatedArtistInformation));
+        verify(metaMusicService).updateArtist(eq(EXAMPLE_ARTIST_NAME), eq(updatedArtist));
     }
 
-    private ResultActions sendUpdateArtistInformationRequest(String newName) throws Exception {
+    private ResultActions sendUpdateArtistRequest(String newName) throws Exception {
         return mockMvc.perform(put("/api/v1/artists/byname/" + EXAMPLE_ARTIST_NAME_URL_ENCODED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -131,25 +131,25 @@ class ApiControllerIT {
     }
 
     @Test
-    void whenEditArtistInformation_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
-        when(metaMusicService.updateArtistInformation(anyString(), any()))
+    void whenEditArtist_withNonExistingArtistName_shouldRespondWithNotFound() throws Exception {
+        when(metaMusicService.updateArtist(anyString(), any()))
                 .thenThrow(NoArtistFoundException.class);
 
-        sendUpdateArtistInformationRequest("valid")
+        sendUpdateArtistRequest("valid")
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void whenEditArtistInformation_withInvalidNewName_shouldRespondWithBadRequest() throws Exception {
-        when(metaMusicService.updateArtistInformation(anyString(), any()))
+    void whenEditArtist_withInvalidNewName_shouldRespondWithBadRequest() throws Exception {
+        when(metaMusicService.updateArtist(anyString(), any()))
                 .thenThrow(IllegalArgumentException.class);
 
-        sendUpdateArtistInformationRequest("")
+        sendUpdateArtistRequest("")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void whenEditArtistInformation_withNoDataToUpdate_shouldRespondWithBadRequest() throws Exception {
+    void whenEditArtist_withNoDataToUpdate_shouldRespondWithBadRequest() throws Exception {
         mockMvc.perform(put("/api/v1/artists/byname/valid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -158,27 +158,27 @@ class ApiControllerIT {
                                  }"""))
                 .andExpect(status().isBadRequest());
 
-        sendUpdateArtistInformationRequest("Fleetwood Mac")
+        sendUpdateArtistRequest("Fleetwood Mac")
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void whenEditArtistInformation_withAlreadyExistingNewName_shouldRespondWithConflict() throws Exception {
-        when(metaMusicService.updateArtistInformation(anyString(), any()))
+    void whenEditArtist_withAlreadyExistingNewName_shouldRespondWithConflict() throws Exception {
+        when(metaMusicService.updateArtist(anyString(), any()))
                 .thenThrow(ArtistAlreadyExistsException.class);
 
-        sendUpdateArtistInformationRequest("valid")
+        sendUpdateArtistRequest("valid")
                 .andExpect(status().isConflict());
     }
 
     @Test
-    void whenEditArtistInformation_withValidNewAliases_shouldRespondWithOkAndUpdatedData() throws Exception {
+    void whenEditArtist_withValidNewAliases_shouldRespondWithOkAndUpdatedData() throws Exception {
         String newAlias = "newAlias";
         String anotherNewAlias = "anotherNewAlias";
         Set<String> newAliases = Set.of(newAlias, anotherNewAlias);
-        ArtistInformation newArtistInformation = new ArtistInformation(EXAMPLE_ARTIST_NAME, newAliases);
-        when(metaMusicService.updateArtistInformation(anyString(), any()))
-                .thenReturn(newArtistInformation);
+        Artist newArtist = new Artist(EXAMPLE_ARTIST_NAME, newAliases);
+        when(metaMusicService.updateArtist(anyString(), any()))
+                .thenReturn(newArtist);
 
         mockMvc.perform(put("/api/v1/artists/byname/Fleetwood+Mac")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -193,13 +193,13 @@ class ApiControllerIT {
                             "name": "%s",
                             "aliases": ["%s","%s"]
                         }""", EXAMPLE_ARTIST_NAME, newAlias, anotherNewAlias)));
-        verify(metaMusicService).updateArtistInformation(eq(EXAMPLE_ARTIST_NAME), eq(newArtistInformation));
+        verify(metaMusicService).updateArtist(eq(EXAMPLE_ARTIST_NAME), eq(newArtist));
     }
 
     @Test
     void whenFetchArtistTracksPaginated_withValidArtistName_shouldRespondWithOkAndExpectedContent() throws Exception {
-        TrackInformation secondTrack = new TrackInformation(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
-        Page<TrackInformation> pageResponse = new PageImpl<>(List.of(EXAMPLE_TRACK, secondTrack));
+        Track secondTrack = new Track(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
+        Page<Track> pageResponse = new PageImpl<>(List.of(EXAMPLE_TRACK, secondTrack));
         when(metaMusicService.getArtistTracksPaginated(anyString(), anyInt(), anyInt()))
                 .thenReturn(pageResponse);
 
@@ -213,9 +213,9 @@ class ApiControllerIT {
 
     @Test
     void whenFetchArtistTracksPaginated_testMultiplePages_shouldRespondWithOkAndExpectedContent() throws Exception {
-        TrackInformation secondTrack = new TrackInformation(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
-        Page<TrackInformation> firstPageResponse = new PageImpl<>(List.of(EXAMPLE_TRACK), PageRequest.of(0, 1), 2);
-        Page<TrackInformation> secondPageResponse = new PageImpl<>(List.of(secondTrack), PageRequest.of(1, 1), 2);
+        Track secondTrack = new Track(EXAMPLE_TRACK_TITLE + "2", EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
+        Page<Track> firstPageResponse = new PageImpl<>(List.of(EXAMPLE_TRACK), PageRequest.of(0, 1), 2);
+        Page<Track> secondPageResponse = new PageImpl<>(List.of(secondTrack), PageRequest.of(1, 1), 2);
         when(metaMusicService.getArtistTracksPaginated(anyString(), anyInt(), eq(1)))
                 .thenReturn(firstPageResponse, secondPageResponse);
 

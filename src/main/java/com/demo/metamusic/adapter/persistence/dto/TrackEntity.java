@@ -4,11 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Date;
-import java.util.Objects;
 
 @Entity(name = "tracks")
 @Data
-public class TrackInformationEntity {
+public class TrackEntity {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -16,7 +15,7 @@ public class TrackInformationEntity {
 
     @ManyToOne
     @JoinColumn(name = "artist_id")
-    private ArtistInformationEntity artist;
+    private ArtistEntity artist;
 
     private String title;
     private String genre;
@@ -24,10 +23,10 @@ public class TrackInformationEntity {
     @Column(name="release_date")
     private Date releaseDate;
 
-    public TrackInformationEntity() {
+    public TrackEntity() {
     }
 
-    public TrackInformationEntity(String title, String genre, String duration, Date releaseDate) {
+    public TrackEntity(String title, String genre, String duration, Date releaseDate) {
         this.title = title;
         this.genre = genre;
         this.duration = duration;
@@ -36,7 +35,7 @@ public class TrackInformationEntity {
 
     @Override
     public String toString() {
-        return "TrackInformationEntity{" +
+        return "TrackEntity{" +
                 "id=" + id +
                 ", artist=" + artist.getName() +
                 ", title='" + title + '\'' +

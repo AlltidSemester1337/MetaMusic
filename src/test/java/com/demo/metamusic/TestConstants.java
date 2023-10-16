@@ -1,6 +1,6 @@
 package com.demo.metamusic;
 
-import com.demo.metamusic.core.model.TrackInformation;
+import com.demo.metamusic.core.model.Track;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -125,7 +125,7 @@ public interface TestConstants {
                  "first": false,
                  "empty": false
              }""";
-    TrackInformation EXAMPLE_TRACK = new TrackInformation(EXAMPLE_TRACK_TITLE, EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
+    Track EXAMPLE_TRACK = new Track(EXAMPLE_TRACK_TITLE, EXAMPLE_GENRE, EXAMPLE_TRACK_DURATION, EXAMPLE_TRACK_RELEASE_DATE);
 
 
     static String createTrackPayload(String title, String genre, String duration, String releaseDate) {

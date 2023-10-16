@@ -1,7 +1,7 @@
 package com.demo.metamusic.core.service;
 
-import com.demo.metamusic.core.model.ArtistInformation;
-import com.demo.metamusic.core.model.TrackInformation;
+import com.demo.metamusic.core.model.Artist;
+import com.demo.metamusic.core.model.Track;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -9,9 +9,9 @@ import java.util.List;
 public interface MetaMusicService {
 
 
-    void addTrack(String artistName, TrackInformation trackInformation);
+    void addTrack(String artistName, Track Track);
 
-    ArtistInformation updateArtistInformation(String oldArtistName, ArtistInformation newArtistInformation);
+    Artist updateArtist(String oldArtistName, Artist newArtist);
 
-    Page<TrackInformation> getArtistTracksPaginated(String artistName, int page, int numTracks);
+    Page<Track> getArtistTracksPaginated(String artistName, int page, int numTracks);
 }

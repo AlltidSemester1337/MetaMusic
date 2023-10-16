@@ -2,12 +2,12 @@ package com.demo.metamusic.core.service;
 
 
 import com.demo.metamusic.adapter.persistence.ArtistAlreadyExistsException;
-import com.demo.metamusic.adapter.persistence.ArtistInformationRepository;
+import com.demo.metamusic.adapter.persistence.ArtistRepository;
 import com.demo.metamusic.adapter.persistence.NoArtistFoundException;
-import com.demo.metamusic.adapter.persistence.dto.ArtistInformationEntity;
-import com.demo.metamusic.adapter.persistence.dto.TrackInformationEntity;
-import com.demo.metamusic.core.model.ArtistInformation;
-import com.demo.metamusic.core.model.TrackInformation;
+import com.demo.metamusic.adapter.persistence.dto.ArtistEntity;
+import com.demo.metamusic.adapter.persistence.dto.TrackEntity;
+import com.demo.metamusic.core.model.Artist;
+import com.demo.metamusic.core.model.Track;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
@@ -22,25 +22,25 @@ import java.util.*;
 public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Autowired
-    private ArtistInformationRepository artistInformationRepository;
+    private ArtistRepository ArtistRepository;
 
-    public MetaMusicServiceImpl(ArtistInformationRepository artistInformationRepository) {
-        this.artistInformationRepository = artistInformationRepository;
+    public MetaMusicServiceImpl(ArtistRepository ArtistRepository) {
+        this.ArtistRepository = ArtistRepository;
     }
 
     @Override
-    public void addTrack(String artistName, TrackInformation trackInformation) {
-        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(artistName);
+    public void addTrack(String artistName, Track Track) {
+        ArtistEntity artistToUpdate = getSingleMatchingArtistByName(artistName);
 
-        TrackInformationEntity newTrack = TrackInformation.toEntity(trackInformation);
+        TrackEntity newTrack = Track.toEntity(Track);
         newTrack.setArtist(artistToUpdate);
         artistToUpdate.getTracks().add(newTrack);
-        ArtistInformationEntity updatedArtist = artistInformationRepository.save(artistToUpdate);
-        log.debug("Updated artist information: {}", updatedArtist);
+        ArtistEntity updatedArtist = ArtistRepository.save(artistToUpdate);
+        log.debug("Updated artist: {}", updatedArtist);
     }
 
-    private ArtistInformationEntity getSingleMatchingArtistByName(String artistName) {
-        List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(artistName);
+    private ArtistEntity getSingleMatchingArtistByName(String artistName) {
+        List<ArtistEntity> matchingArtists = ArtistRepository.findByName(artistName);
         log.debug("Found matching artists: {}", matchingArtists);
 
         if (matchingArtists.isEmpty()) {
@@ -53,31 +53,31 @@ public class MetaMusicServiceImpl implements MetaMusicService {
 
     @Override
     @Transactional
-    public ArtistInformation updateArtistInformation(String oldArtistName, ArtistInformation newArtistInformation) {
-        verifyNewArtistNameDoesNotExist(newArtistInformation.name());
-        ArtistInformationEntity artistToUpdate = getSingleMatchingArtistByName(oldArtistName);
+    public Artist updateArtist(String oldArtistName, Artist newArtist) {
+        verifyNewArtistNameDoesNotExist(newArtist.name());
+        ArtistEntity artistToUpdate = getSingleMatchingArtistByName(oldArtistName);
 
-        artistToUpdate.setName(newArtistInformation.name());
+        artistToUpdate.setName(newArtist.name());
 
         Set<String> aliases = new HashSet<>(artistToUpdate.getAliases());
-        aliases.addAll(newArtistInformation.aliases());
+        aliases.addAll(newArtist.aliases());
         artistToUpdate.setAliases(aliases);
 
-        ArtistInformationEntity updatedEntity = artistInformationRepository.save(artistToUpdate);
-        log.debug("Updated artist information: {}", updatedEntity);
-        return ArtistInformation.fromEntity(updatedEntity);
+        ArtistEntity updatedEntity = ArtistRepository.save(artistToUpdate);
+        log.debug("Updated artist: {}", updatedEntity);
+        return Artist.fromEntity(updatedEntity);
     }
 
     @Override
-    public Page<TrackInformation> getArtistTracksPaginated(String artistName, int page, int numTracks) {
-        ArtistInformationEntity artistInformation = getSingleMatchingArtistByName(artistName);
+    public Page<Track> getArtistTracksPaginated(String artistName, int page, int numTracks) {
+        ArtistEntity Artist = getSingleMatchingArtistByName(artistName);
         PageRequest pageRequest = PageRequest.of(page, numTracks);
-        return artistInformationRepository.fetchTracksPaginated(artistInformation.getId(), pageRequest)
-                .map(TrackInformation::fromEntity);
+        return ArtistRepository.fetchTracksPaginated(Artist.getId(), pageRequest)
+                .map(Track::fromEntity);
     }
 
     private void verifyNewArtistNameDoesNotExist(String artistName) {
-        List<ArtistInformationEntity> matchingArtists = artistInformationRepository.findByName(artistName);
+        List<ArtistEntity> matchingArtists = ArtistRepository.findByName(artistName);
         log.debug("Found matching artists: {}", matchingArtists);
 
         if (!matchingArtists.isEmpty()) {
