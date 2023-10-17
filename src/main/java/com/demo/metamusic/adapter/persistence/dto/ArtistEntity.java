@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity(name="artists")
+@Entity(name = "artists")
 @Data
 public class ArtistEntity {
 
@@ -18,6 +18,7 @@ public class ArtistEntity {
 
     private String name;
 
+    @ElementCollection
     private Set<String> aliases;
 
     @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL)
@@ -34,6 +35,7 @@ public class ArtistEntity {
         this.name = name;
         this.aliases = aliases;
     }
+
     public ArtistDayRotationEntity getDayRotation() {
         return dayRotation;
     }

@@ -12,9 +12,9 @@ import com.demo.metamusic.core.model.Track;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -22,10 +22,11 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Slf4j
+@Service
 public class MetaMusicServiceImpl implements MetaMusicService {
 
     public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Paris");
-    @Autowired
+
     private final ArtistRepository artistRepository;
 
     public MetaMusicServiceImpl(ArtistRepository ArtistRepository) {

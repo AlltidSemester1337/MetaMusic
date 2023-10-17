@@ -59,17 +59,19 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        try {
-            metaMusicService.addTrack(UrlEncodingUtils.decodeArtistName(artistName), track);
-            String updatedCatalogueLink = "/api/v1/artists/byname/" + artistName + "/tracks";
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new UpdatedTrackCatalogueLinkDTO(updatedCatalogueLink));
-        } catch (NoArtistFoundException e) {
-            log.info("Could not find artist", e);
-            // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is conflicting (scoped out due to time constraints)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        metaMusicService.addTrack(UrlEncodingUtils.decodeArtistName(artistName), track);
+        String updatedCatalogueLink = "/api/v1/artists/byname/" + artistName + "/tracks";
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new UpdatedTrackCatalogueLinkDTO(updatedCatalogueLink));
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleNoArtistFound(NoArtistFoundException e) {
+        log.info("Could not find artist", e);
+        // TODO: 10/11/23 This could/should be more detailed of specifically what data in the request is conflicting (scoped out due to time constraints)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @PutMapping(path = "/artists/byname/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -94,9 +96,6 @@ public class ApiController {
         Artist updatedArtist;
         try {
             updatedArtist = metaMusicService.updateArtist(oldArtistNameNormalized, newArtist);
-        } catch (NoArtistFoundException e) {
-            log.info("Could not find artist", e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (ArtistAlreadyExistsException e) {
             log.info("Artist with new name already exists", e);
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -119,13 +118,9 @@ public class ApiController {
             @PathVariable("name") final String artistName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int max) {
-        Page<Track> artistTracks;
-        try {
-            artistTracks = metaMusicService.getArtistTracksPaginated(UrlEncodingUtils.decodeArtistName(artistName), page, max);
-        } catch (NoArtistFoundException e) {
-            log.info("Could not find artist", e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+
+        Page<Track> artistTracks = metaMusicService.getArtistTracksPaginated(UrlEncodingUtils.decodeArtistName(artistName), page, max);
+
         return ResponseEntity.status(HttpStatus.OK).body(artistTracks.map(Track::toDTO));
     }
 

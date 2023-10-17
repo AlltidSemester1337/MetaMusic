@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-class MetaMusicServiceApplicationTests {
+class MetaMusicApplicationTests {
 
 	@MockBean
 	private ArtistRepository ArtistRepository;
