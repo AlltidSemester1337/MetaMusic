@@ -13,7 +13,8 @@ public class TrackEntity {
     @Id
     private Long id;
 
-    @ManyToOne
+    // TODO: 10/23/23 Test
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")
     private ArtistEntity artist;
 

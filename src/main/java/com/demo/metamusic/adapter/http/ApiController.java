@@ -36,6 +36,9 @@ import java.util.Optional;
 // In a more realistic scenario it would be very beneficial to add similar operations but instead based on id attribute, however
 // for the purpose of this task and to provide some convenience and user friendliness calling the API (especially to add tracks)
 // as well as the common use case of the artist name actually being unique I think as a first release / version having name based operations is a fair approach
+
+// TODO: 10/24/23 For all endpoints we should consider including artist name in request data instead of url path, will make it a bit more caller friendly
+// TODO: 10/24/23 At the same time from a REST perspective it's slightly worse design but in this case probably a tradeoff that's worth it
 public class ApiController {
 
     private final MetaMusicService metaMusicService;
@@ -74,6 +77,7 @@ public class ApiController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    // TODO: 10/24/23 We should split adding aliases and updating name on two different endpoints, better both for reduced complexity and caller perspective
     @PutMapping(path = "/artists/byname/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArtistDTO> editArtist(
             @PathVariable("name") final String artistName,

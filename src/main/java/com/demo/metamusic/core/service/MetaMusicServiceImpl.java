@@ -12,8 +12,10 @@ import com.demo.metamusic.core.model.Track;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
@@ -21,12 +23,14 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
+import static javax.management.timer.Timer.ONE_DAY;
+
 @Slf4j
 @Service
 public class MetaMusicServiceImpl implements MetaMusicService {
 
     public static final ZoneId DEFAULT_ZONE = ZoneId.of("Europe/Paris");
-
+    // TODO: 10/24/23 Should work on a abstraction "Artists" interface with ArtistJpaAdapter handling JPA interactions and entity mappings
     private final ArtistRepository artistRepository;
 
     public MetaMusicServiceImpl(ArtistRepository ArtistRepository) {
@@ -108,11 +112,21 @@ public class MetaMusicServiceImpl implements MetaMusicService {
         ArtistEntity mostRecentArtistOfTheDay = possibleMostRecentArtistOfTheDay.get();
         if (isExpired(mostRecentArtistOfTheDay)) {
             log.info("Most recent artist: {} expired", mostRecentArtistOfTheDay);
-            return Optional.of(updateArtistOfTheDay(mostRecentArtistOfTheDay));
+            Optional<Artist> newArtistOfTheDay = Optional.of(updateArtistOfTheDay(mostRecentArtistOfTheDay));
+            evictArtistOfTheDayCache();
+            return newArtistOfTheDay;
         }
 
         log.debug("Found valid artist of the day: {}", mostRecentArtistOfTheDay);
         return Optional.of(Artist.fromEntity(mostRecentArtistOfTheDay));
+    }
+
+    // TODO: 10/24/23 If we want to guarantee rotation without api calls we can schedule but then we should remove explicit call
+    //@Scheduled(fixedRate = ONE_DAY)
+    // TODO: 10/24/23 Test
+    @CacheEvict(cacheNames = "artistOfTheDay")
+    private void evictArtistOfTheDayCache() {
+        log.info("artistOfTheDay cache cleared");
     }
 
     private ArtistEntity assignNewArtistOfTheDay(Long mostRecentArtistOfTheDayId) {
@@ -132,6 +146,7 @@ public class MetaMusicServiceImpl implements MetaMusicService {
     @Transactional
     public Artist updateArtistOfTheDay(ArtistEntity mostRecentArtistOfTheDay) {
         ArtistEntity newArtistOfTheDay = assignNewArtistOfTheDay(mostRecentArtistOfTheDay.getId());
+        // TODO: 10/24/23 Delete old Artist of the day instead for performance optimization of the get, no need to keep historical entries
         mostRecentArtistOfTheDay.getDayRotation().setMostRecent(false);
         log.info("Updating yesterdays artist of the day, set as no longer most recent: {}", mostRecentArtistOfTheDay);
         artistRepository.save(mostRecentArtistOfTheDay);

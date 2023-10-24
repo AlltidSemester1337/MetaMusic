@@ -1,8 +1,0 @@
-[source,http,options="nowrap"]
-----
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 378
-
-{"content":[{"title":"Gold Dust Woman","genre":"Rock","duration":"4:55","releaseDate":"1977-02-04"},{"title":"Gold Dust Woman2","genre":"Rock","duration":"4:55","releaseDate":"1977-02-04"}],"pageable":"INSTANCE","totalPages":1,"totalElements":2,"last":true,"size":2,"number":0,"sort":{"empty":true,"sorted":false,"unsorted":true},"first":true,"numberOfElements":2,"empty":false}
-----

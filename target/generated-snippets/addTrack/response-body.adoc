@@ -1,4 +1,0 @@
-[source,json,options="nowrap"]
-----
-{"updatedCatalogueLink":"/api/v1/artists/byname/Fleetwood+Mac/tracks"}
-----
